@@ -1,0 +1,44 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build and Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Create plugin directory
+        run: |
+          mkdir -p build/quick-entry
+          rsync -av --exclude='build/' \
+                  --exclude='.git/' \
+                  --exclude='.github/' \
+                  --exclude='node_modules/' \
+                  --exclude='.gitignore' \
+                  --exclude='*.zip' \
+                  ./ build/quick-entry/
+
+      - name: Create zip file
+        run: |
+          cd build
+          zip -r ../quick-entry.zip quick-entry
+          cd ..
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: quick-entry.zip
+          generate_release_notes: true
+          tag_name: v${{ steps.get_version.outputs.VERSION }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

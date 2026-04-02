@@ -1,0 +1,285 @@
+/**
+ * QuickEntry - Admin Styles
+ */
+
+/* Button Hero Style */
+#qentry-create-btn {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 6px;
+}
+#qentry-create-btn .dashicons {
+    vertical-align: middle;
+    display: flex;
+    align-items: center;
+}
+
+/* General Admin Styles */
+.qentry-admin-wrap {
+    max-width: 1200px;
+    margin: 20px 20px 0 0;
+}
+
+.qentry-admin-wrap h1 {
+    margin-bottom: 20px;
+}
+
+/* Tab Navigation */
+.qentry-admin-wrap .nav-tab-wrapper {
+    margin-bottom: 20px;
+}
+
+.qentry-admin-wrap .nav-tab .dashicons {
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+/* Form Styles */
+.qentry-create-form {
+    background: #fff;
+    padding: 20px;
+    border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.qentry-create-form .form-table th {
+    width: 200px;
+    font-weight: 600;
+}
+
+.qentry-create-form .required {
+    color: #d63638;
+}
+
+.qentry-create-form .spinner {
+    float: none;
+    margin: 0 0 0 10px;
+}
+
+/* Date Picker Styles */
+.qentry-date-picker {
+    margin-right: 10px;
+}
+
+.ui-datepicker {
+    z-index: 10000 !important;
+}
+
+/* Modal Styles */
+.qentry-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100000;
+}
+
+.qentry-modal-content {
+    background: #fff;
+    padding: 0;
+    border-radius: 8px;
+    max-width: 600px;
+    width: 90%;
+    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+}
+
+.qentry-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.qentry-modal-header h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.qentry-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    line-height: 1;
+}
+
+.qentry-modal-close:hover {
+    color: #000;
+}
+
+.qentry-modal-body {
+    padding: 25px;
+}
+
+/* Success Message */
+.qentry-success-message {
+    display: flex;
+    align-items: center;
+    background: #edfaef;
+    border: 1px solid #00a32a;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.qentry-success-icon {
+    font-size: 36px;
+    color: #00a32a;
+    margin-right: 15px;
+}
+
+.qentry-success-message p {
+    margin: 0;
+    font-size: 16px;
+    color: #1e1e1e;
+}
+
+/* URL Display */
+.qentry-url-display {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.qentry-url-display input {
+    flex: 1;
+    padding: 10px;
+    font-family: monospace;
+    font-size: 14px;
+    background: #f0f0f1;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+}
+
+.qentry-url-display .button .dashicons {
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+/* URL Info */
+.qentry-url-info {
+    background: #f0f0f1;
+    padding: 15px 20px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.qentry-url-info p {
+    margin: 0 0 10px 0;
+}
+
+.qentry-url-info ol {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.qentry-url-info li {
+    margin-bottom: 5px;
+    color: #50575e;
+}
+
+/* Modal Actions */
+.qentry-modal-actions {
+    text-align: right;
+    padding-top: 15px;
+    border-top: 1px solid #e5e5e5;
+}
+
+/* Logins List Styles */
+.qentry-logins-list {
+    background: #fff;
+    padding: 20px;
+    border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.qentry-search-form {
+    margin-bottom: 15px;
+}
+
+/* Status Badges */
+.qentry-status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.qentry-status-badge.qentry-active {
+    background: #edfaef;
+    color: #00a32a;
+}
+
+.qentry-status-badge.qentry-expired {
+    background: #fcf0f1;
+    color: #d63638;
+}
+
+/* Action Buttons */
+.qentry-copy-btn .dashicons,
+.qentry-resend-btn .dashicons,
+.qentry-delete-btn .dashicons {
+    margin: 0;
+    vertical-align: middle;
+}
+
+.qentry-delete-btn {
+    color: #d63638;
+    border-color: #d63638;
+}
+
+.qentry-delete-btn:hover {
+    background: #d63638;
+    color: #fff;
+}
+
+.qentry-copy-btn:hover,
+.qentry-resend-btn:hover {
+    background: #2271b1;
+    color: #fff;
+}
+
+/* Responsive */
+@media (max-width: 782px) {
+    .qentry-admin-wrap {
+        margin-right: 10px;
+    }
+    
+    .qentry-create-form .form-table th {
+        width: auto;
+        display: block;
+        padding-bottom: 5px;
+    }
+    
+    .qentry-create-form .form-table td {
+        display: block;
+        padding-top: 5px;
+    }
+    
+    .qentry-url-display {
+        flex-direction: column;
+    }
+    
+    .qentry-modal-content {
+        width: 95%;
+    }
+    
+    .qentry-search-form .search-box {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .qentry-search-form .search-box input[type="search"] {
+        margin-bottom: 10px;
+    }
+}
