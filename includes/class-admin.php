@@ -343,8 +343,9 @@ class QENTRY_Admin {
     private static function get_available_roles() {
         global $wp_roles;
         
-        // Roles that should never be assignable via magic link
-        $denied_roles = apply_filters('qentry_denied_roles', array('administrator'));
+        // Optionally restrict roles via filter, e.g. to block administrator:
+        // add_filter('qentry_denied_roles', function() { return ['administrator']; });
+        $denied_roles = apply_filters('qentry_denied_roles', array());
         
         $roles = array();
         foreach ($wp_roles->roles as $role_key => $role_data) {
@@ -383,8 +384,8 @@ class QENTRY_Admin {
             wp_send_json_error(__('Invalid role selected.', 'quick-entry'));
         }
         
-        // Deny administrator role (H06)
-        $denied_roles = apply_filters('qentry_denied_roles', array('administrator'));
+        // Validate against denied roles (configurable via qentry_denied_roles filter)
+        $denied_roles = apply_filters('qentry_denied_roles', array());
         if (in_array($role, $denied_roles, true)) {
             wp_send_json_error(__('This role cannot be assigned via QuickEntry.', 'quick-entry'));
         }
