@@ -16,6 +16,7 @@ class QENTRY_Admin {
         add_action('wp_ajax_qentry_delete_login', array(__CLASS__, 'ajax_delete_login'));
         add_action('wp_ajax_qentry_resend_code', array(__CLASS__, 'ajax_resend_code'));
         add_action('wp_ajax_qentry_get_tab_content', array(__CLASS__, 'ajax_get_tab_content'));
+        add_action('wp_ajax_qentry_toggle_logging', array(__CLASS__, 'ajax_toggle_logging'));
     }
     
     /**
@@ -85,6 +86,16 @@ class QENTRY_Admin {
 
         $logins = QENTRY_Database::get_all_logins($per_page, $page);
         $total = QENTRY_Database::get_total_count();
+
+        // Activity logs pagination
+        $log_page = isset($_GET['log_paged']) ? max(1, intval($_GET['log_paged'])) : 1;
+        $log_per_page = 25;
+        $filter_entry = isset($_GET['filter_entry']) ? absint($_GET['filter_entry']) : 0;
+        $filter_type = isset($_GET['filter_type']) ? sanitize_text_field($_GET['filter_type']) : '';
+
+        $logs = QENTRY_Logger::get_logs($log_per_page, $log_page, $filter_entry, 0, $filter_type);
+        $log_total = QENTRY_Logger::get_total_count($filter_entry, 0, $filter_type);
+        $logging_enabled = get_option('qentry_logging_enabled', true);
 
         global $wp_roles;
         $all_roles = array();
@@ -245,6 +256,113 @@ class QENTRY_Admin {
                         echo '</div>';
                     }
                     ?>
+                </div>
+            </div>
+
+            <!-- Activity Log Section -->
+            <div class="qentry-activity-section <?php echo $logging_enabled ? 'qentry-logging-enabled' : ''; ?>">
+                <h2><?php _e('Activity Log', 'quick-entry'); ?></h2>
+                <div class="qentry-activity-list">
+                    <form method="get" class="qentry-log-filters">
+                        <input type="hidden" name="page" value="quick-entry">
+                        <div class="qentry-log-filters-left">
+                            <select name="filter_type" class="qentry-form-input" style="width:150px;">
+                                <option value=""><?php _e('All Types', 'quick-entry'); ?></option>
+                                <option value="post" <?php selected($filter_type, 'post'); ?>><?php _e('Posts', 'quick-entry'); ?></option>
+                                <option value="media" <?php selected($filter_type, 'media'); ?>><?php _e('Media', 'quick-entry'); ?></option>
+                                <option value="comment" <?php selected($filter_type, 'comment'); ?>><?php _e('Comments', 'quick-entry'); ?></option>
+                                <option value="user" <?php selected($filter_type, 'user'); ?>><?php _e('Users', 'quick-entry'); ?></option>
+                                <option value="plugin" <?php selected($filter_type, 'plugin'); ?>><?php _e('Plugins', 'quick-entry'); ?></option>
+                                <option value="theme" <?php selected($filter_type, 'theme'); ?>><?php _e('Themes', 'quick-entry'); ?></option>
+                                <option value="setting" <?php selected($filter_type, 'setting'); ?>><?php _e('Settings', 'quick-entry'); ?></option>
+                            </select>
+                            <button type="submit" class="button"><?php _e('Filter', 'quick-entry'); ?></button>
+                            <?php if ($filter_type) : ?>
+                                <a href="<?php echo esc_url(admin_url('admin.php?page=quick-entry')); ?>" class="button"><?php _e('Clear Filter', 'quick-entry'); ?></a>
+                            <?php endif; ?>
+                        </div>
+                        <div class="qentry-log-filters-right">
+                            <label class="qentry-logging-toggle">
+                                <span class="qentry-toggle-label"><?php _e('Logging', 'quick-entry'); ?></span>
+                                <input type="checkbox" id="qentry-logging-toggle" <?php checked(get_option('qentry_logging_enabled', true)); ?>>
+                                <span class="qentry-toggle-slider"></span>
+                            </label>
+                            <input type="hidden" name="qentry_toggle_logging" id="qentry-logging-nonce" value="<?php echo wp_create_nonce('qentry_toggle_logging'); ?>">
+                        </div>
+                    </form>
+
+                    <?php if ($logging_enabled) : ?>
+                    <div class="qentry-activity-table-wrap">
+                    <table class="wp-list-table widefat fixed striped qentry-activity-table" style="table-layout:auto;">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="manage-column column-time"><?php _e('Time', 'quick-entry'); ?></th>
+                                <th scope="col" class="manage-column column-action"><?php _e('Action', 'quick-entry'); ?></th>
+                                <th scope="col" class="manage-column column-user"><?php _e('User', 'quick-entry'); ?></th>
+                                <th scope="col" class="manage-column column-object"><?php _e('Object', 'quick-entry'); ?></th>
+                                <th scope="col" class="manage-column column-ip"><?php _e('IP Address', 'quick-entry'); ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($logs)) : ?>
+                                <tr>
+                                    <td colspan="5"><?php _e('No activity logged yet.', 'quick-entry'); ?></td>
+                                </tr>
+                            <?php else : ?>
+                                <?php foreach ($logs as $log) :
+                                    $user = get_user_by('id', $log->user_id);
+                                    $email = $user ? $user->user_email : '';
+                                    $meta = !empty($log->meta) ? json_decode($log->meta, true) : array();
+                                ?>
+                                    <tr>
+                                        <td class="column-time"><?php echo esc_html(date('M j, Y H:i', strtotime($log->created_at))); ?></td>
+                                        <td class="column-action"><strong><?php echo esc_html($log->action); ?></strong></td>
+                                        <td class="column-user">
+                                            <?php if ($user) : ?>
+                                                <?php echo esc_html($user->display_name); ?>
+                                            <?php else : ?>
+                                                <em><?php _e('Unknown', 'quick-entry'); ?></em>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="column-object">
+                                            <?php if ($log->object_name) : ?>
+                                                <?php echo esc_html($log->object_name); ?>
+                                            <?php else : ?>
+                                                <em><?php _e('N/A', 'quick-entry'); ?></em>
+                                            <?php endif; ?>
+                                            <?php if ($log->object_id > 0) : ?>
+                                                <small>(#<?php echo esc_html($log->object_id); ?>)</small>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="column-ip"><?php echo esc_html($log->ip_address); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+
+                    <?php
+                    if ($log_total > $log_per_page) {
+                        echo '<div class="tablenav bottom">';
+                        echo '<div class="tablenav-pages">';
+                        echo paginate_links(array(
+                            'base' => add_query_arg('log_paged', '%#%'),
+                            'format' => '',
+                            'prev_text' => __('&laquo;', 'quick-entry'),
+                            'next_text' => __('&raquo;', 'quick-entry'),
+                            'total' => ceil($log_total / $log_per_page),
+                            'current' => $log_page,
+                        ));
+                        echo '</div>';
+                        echo '</div>';
+                    }
+                    ?>
+                    </div>
+                    <?php else : ?>
+                    <div class="qentry-logging-disabled">
+                        <p><?php _e('Activity logging is currently disabled. Enable it using the toggle above to start tracking user actions.', 'quick-entry'); ?></p>
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -602,6 +720,25 @@ class QENTRY_Admin {
         }
     }
     
+    /**
+     * AJAX: Toggle activity logging
+     */
+    public static function ajax_toggle_logging() {
+        check_ajax_referer('qentry_toggle_logging', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(__('Permission denied.', 'quick-entry'));
+        }
+
+        $enabled = isset($_POST['enabled']) && $_POST['enabled'] === 'true';
+        update_option('qentry_logging_enabled', $enabled);
+
+        wp_send_json_success(array(
+            'enabled' => $enabled,
+            'message' => $enabled ? __('Activity logging enabled.', 'quick-entry') : __('Activity logging disabled.', 'quick-entry'),
+        ));
+    }
+
     /**
      * AJAX: Get tab content
      */

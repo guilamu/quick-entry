@@ -291,17 +291,63 @@
             var className = type === 'success' ? 'notice-success' : 'notice-error';
             var $notice = $('<div class="notice ' + className + ' is-dismissible"><p></p></div>');
             $notice.find('p').text(message); // Use .text() (textContent) instead of HTML injection to prevent XSS
-            
+
             $('.notice').remove();
-            
+
             $('.qentry-admin-wrap > h1').after($notice);
-            
+
             setTimeout(() => {
                 $notice.fadeOut(300, function() {
                     $(this).remove();
                 });
             }, 3000);
         }
+
+        // Activity logging toggle - hide filters/table on load if disabled
+        if (!$('#qentry-logging-toggle').is(':checked')) {
+            $('.qentry-activity-section').removeClass('qentry-logging-enabled');
+            $('.qentry-activity-table-wrap').hide();
+            $('.qentry-log-filters-left').hide();
+            $('.qentry-logging-disabled').show();
+        }
+
+        $('#qentry-logging-toggle').on('change', function() {
+            var enabled = $(this).is(':checked');
+
+            $.ajax({
+                url: qentry_data.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'qentry_toggle_logging',
+                    nonce: $('#qentry-logging-nonce').val(),
+                    enabled: enabled.toString()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        showNotification(response.data.message, 'success');
+                        if (enabled) {
+                            $('.qentry-activity-section').addClass('qentry-logging-enabled');
+                            $('.qentry-activity-table-wrap').show();
+                            $('.qentry-log-filters-left').show();
+                            $('.qentry-logging-disabled').hide();
+                        } else {
+                            $('.qentry-activity-section').removeClass('qentry-logging-enabled');
+                            $('.qentry-activity-table-wrap').hide();
+                            $('.qentry-log-filters-left').hide();
+                            $('.qentry-logging-disabled').show();
+                        }
+                    } else {
+                        showNotification('Failed to update logging setting', 'error');
+                        // Revert toggle on failure
+                        $('#qentry-logging-toggle').prop('checked', !enabled);
+                    }
+                },
+                error: function() {
+                    showNotification('An error occurred', 'error');
+                    $('#qentry-logging-toggle').prop('checked', !enabled);
+                }
+            });
+        });
     });
-    
+
 })(jQuery);

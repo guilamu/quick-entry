@@ -46,12 +46,18 @@ class QENTRY_Database {
      */
     public static function activate() {
         self::create_table();
+        QENTRY_Logger::create_table();
         self::maybe_upgrade();
         self::add_default_options();
-        
+
         // Schedule cleanup cron job
         if (!wp_next_scheduled('qentry_cleanup_expired_tokens')) {
             wp_schedule_event(time(), 'twicedaily', 'qentry_cleanup_expired_tokens');
+        }
+
+        // Schedule activity log cleanup
+        if (!wp_next_scheduled('qentry_cleanup_activity_logs')) {
+            wp_schedule_event(time(), 'daily', 'qentry_cleanup_activity_logs');
         }
     }
     
@@ -79,6 +85,7 @@ class QENTRY_Database {
      */
     public static function deactivate() {
         wp_clear_scheduled_hook('qentry_cleanup_expired_tokens');
+        wp_clear_scheduled_hook('qentry_cleanup_activity_logs');
         self::cleanup_expired();
     }
     
@@ -89,6 +96,7 @@ class QENTRY_Database {
         add_option('qentry_code_expiry_minutes', 10);
         add_option('qentry_max_code_requests', 5);
         add_option('qentry_cleanup_days', 30);
+        add_option('qentry_logging_enabled', true);
     }
     
     /**

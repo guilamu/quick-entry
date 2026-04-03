@@ -97,6 +97,7 @@ add_filter( 'qentry_email_body', function( $body, $code ) {
 │   ├── class-database.php       # Custom table management
 │   ├── class-email.php          # Email sending functionality
 │   ├── class-frontend.php       # Verification page rendering
+│   ├── class-logger.php         # Activity logging for temp users
 │   └── class-github-updater.php # GitHub auto-updates
 └── languages
     ├── quick-entry-fr_FR.mo     # French translation (binary)
@@ -106,12 +107,10 @@ add_filter( 'qentry_email_body', function( $body, $code ) {
 
 ## Changelog
 
-### 1.1.2
+### 1.2.1
+- **New Feature:** Activity Log tracks all actions performed by temporary login users (posts, comments, media, users, plugins, themes, settings)
 - **UI improvements:** Removed tabs and search from admin page, "All Logins" table now displayed under create form
 - **Bug fix:** "Number of Uses" parameter now properly saved and displayed
-
-### 1.1.1
-- **UI improvements:** Better UI
 
 ### 1.1.0
 - **Security:** Tokens now stored as SHA-256 hashes — raw token never persists in DB
