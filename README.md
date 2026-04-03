@@ -2,6 +2,8 @@
 
 Create temporary login URLs with email verification and role assignment for WordPress.
 
+![Plugin Screenshot](https://github.com/guilamu/quick-entry/blob/main/Screenshot.png)
+
 ## Temporary Login Management
 
 - Generate unique, secure login URLs that expire after a set time
