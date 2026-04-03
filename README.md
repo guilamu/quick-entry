@@ -106,6 +106,9 @@ add_filter( 'qentry_email_body', function( $body, $code ) {
 
 ## Changelog
 
+### 1.1.1
+- **UI improvements:** Better UI
+
 ### 1.1.0
 - **Security:** Tokens now stored as SHA-256 hashes — raw token never persists in DB
 - **Security:** Switched token generation to `random_bytes(32)` (256-bit CSPRNG)

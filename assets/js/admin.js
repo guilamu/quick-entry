@@ -105,9 +105,9 @@
         
         function toggleMaxUses() {
             if ($('#qentry-usage-multiple').is(':checked')) {
-                $('#qentry-max-uses-container').slideDown(200);
+                $('#qentry-max-uses-container').addClass('active');
             } else {
-                $('#qentry-max-uses-container').slideUp(200);
+                $('#qentry-max-uses-container').removeClass('active');
                 $('#qentry-max-uses').val(0);
             }
         }

@@ -6,8 +6,9 @@
 #qentry-create-btn {
     display: inline-flex !important;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
 }
+
 #qentry-create-btn .dashicons {
     vertical-align: middle;
     display: flex;
@@ -16,51 +17,253 @@
 
 /* General Admin Styles */
 .qentry-admin-wrap {
-    max-width: 1200px;
-    margin: 20px 20px 0 0;
+    max-width: 1000px;
+    margin: 30px 0;
 }
 
 .qentry-admin-wrap h1 {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
+    font-size: 32px;
+    font-weight: 600;
 }
 
 /* Tab Navigation */
 .qentry-admin-wrap .nav-tab-wrapper {
-    margin-bottom: 20px;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #e5e5e5;
+}
+
+.qentry-admin-wrap .nav-tab {
+    padding: 8px 16px;
+    margin-bottom: -2px;
+    font-size: 14px;
+    color: #666;
+    border: 1px solid transparent;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.qentry-admin-wrap .nav-tab:hover {
+    color: #0073aa;
+}
+
+.qentry-admin-wrap .nav-tab.nav-tab-active {
+    color: #0073aa;
+    border-bottom-color: #0073aa;
 }
 
 .qentry-admin-wrap .nav-tab .dashicons {
     vertical-align: middle;
-    margin-right: 5px;
+    margin-right: 8px;
+    font-size: 18px;
 }
 
-/* Form Styles */
+/* Form Container Styles */
 .qentry-create-form {
     background: #fff;
-    padding: 20px;
-    border-radius: 3px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e5e5;
 }
 
-.qentry-create-form .form-table th {
-    width: 200px;
+/* Form Row - Multi-column layout */
+.qentry-form-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+/* Individual Form Field */
+.qentry-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Column width utilities */
+.qentry-form-col-third {
+    grid-column: span 1;
+}
+
+/* Form Labels */
+.qentry-form-label {
+    display: block;
+    font-size: 14px;
     font-weight: 600;
+    color: #1e1e1e;
+    margin: 0;
 }
 
-.qentry-create-form .required {
+.qentry-form-label-secondary {
+    font-size: 13px;
+    font-weight: 500;
+    color: #1e1e1e;
+}
+
+.qentry-required {
     color: #d63638;
+    margin-left: 4px;
+    font-weight: 700;
 }
 
-.qentry-create-form .spinner {
-    float: none;
-    margin: 0 0 0 10px;
+/* Form Inputs */
+.qentry-form-input {
+    padding: 10px 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #1e1e1e;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.qentry-form-input:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+.qentry-form-input:hover:not(:focus) {
+    border-color: #999;
+}
+
+select.qentry-form-input {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236b7280'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z'/%3E%3C/svg%3E");
+    background-position: right 10px center;
+    background-repeat: no-repeat;
+    background-size: 18px;
+    padding-right: 36px;
+}
+
+/* DateTime Input Group */
+.qentry-datetime-inputs {
+    display: flex;
+    gap: 12px;
+    flex-wrap: nowrap;
+}
+
+.qentry-date-picker {
+    flex: 1;
+    min-width: 0;
+}
+
+.qentry-time-input {
+    width: 120px;
+    flex-shrink: 0;
+}
+
+/* Help Text */
+.qentry-form-help {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+    line-height: 1.5;
+}
+
+/* Usage Type - Radio Buttons Section */
+.qentry-usage-fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+.qentry-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.qentry-radio-group-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.qentry-radio-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.qentry-radio-item:hover {
+    background: #f0f0f1;
+    border-color: #ddd;
+}
+
+.qentry-radio-input {
+    margin-top: 3px;
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.qentry-radio-label {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    cursor: pointer;
+    flex: 1;
+    margin: 0;
+}
+
+.qentry-radio-title {
+    font-weight: 500;
+    color: #1e1e1e;
+    font-size: 14px;
+    display: block;
+}
+
+.qentry-radio-help {
+    font-size: 12px;
+    color: #666;
+    display: block;
+}
+
+/* Max Uses Container */
+.qentry-max-uses-section {
+    margin-top: 16px;
+    padding: 16px;
+    background: #f9f9f9;
+    border-radius: 4px;
+    border: 1px solid #e5e5e5;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.qentry-max-uses-section.active {
+    display: flex;
+}
+
+.qentry-max-uses-input {
+    width: 120px;
+}
+
+/* Form Actions */
+.qentry-form-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 24px;
+}
+
+.qentry-form-actions .spinner {
+    margin-left: 0 !important;
 }
 
 /* Date Picker Styles */
-.qentry-date-picker {
-    margin-right: 10px;
-}
-
 .ui-datepicker {
     z-index: 10000 !important;
 }
@@ -82,41 +285,49 @@
 .qentry-modal-content {
     background: #fff;
     padding: 0;
-    border-radius: 8px;
+    border-radius: 12px;
     max-width: 600px;
     width: 90%;
-    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
 }
 
 .qentry-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
+    padding: 24px;
     border-bottom: 1px solid #e5e5e5;
 }
 
 .qentry-modal-header h2 {
     margin: 0;
     font-size: 18px;
+    font-weight: 600;
+    color: #1e1e1e;
 }
 
 .qentry-modal-close {
     background: none;
     border: none;
-    font-size: 24px;
+    font-size: 28px;
     cursor: pointer;
-    color: #666;
+    color: #999;
     padding: 0;
     line-height: 1;
+    transition: color 0.2s ease;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .qentry-modal-close:hover {
-    color: #000;
+    color: #1e1e1e;
 }
 
 .qentry-modal-body {
-    padding: 25px;
+    padding: 32px;
 }
 
 /* Success Message */
@@ -124,108 +335,154 @@
     display: flex;
     align-items: center;
     background: #edfaef;
-    border: 1px solid #00a32a;
-    border-radius: 4px;
-    padding: 15px;
-    margin-bottom: 20px;
+    border: 1px solid #52c41a;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 24px;
 }
 
 .qentry-success-icon {
-    font-size: 36px;
-    color: #00a32a;
-    margin-right: 15px;
+    font-size: 32px;
+    color: #52c41a;
+    margin-right: 16px;
+    flex-shrink: 0;
 }
 
 .qentry-success-message p {
     margin: 0;
-    font-size: 16px;
+    font-size: 14px;
     color: #1e1e1e;
+    font-weight: 500;
 }
 
 /* URL Display */
 .qentry-url-display {
     display: flex;
     gap: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
 
 .qentry-url-display input {
     flex: 1;
-    padding: 10px;
-    font-family: monospace;
-    font-size: 14px;
-    background: #f0f0f1;
-    border: 1px solid #c3c4c7;
+    padding: 10px 12px;
+    font-family: 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    background: #f9f9f9;
+    border: 1px solid #e5e5e5;
     border-radius: 4px;
+    color: #1e1e1e;
+}
+
+.qentry-url-display .button {
+    white-space: nowrap;
 }
 
 .qentry-url-display .button .dashicons {
     vertical-align: middle;
-    margin-right: 5px;
+    margin-right: 6px;
 }
 
 /* URL Info */
 .qentry-url-info {
-    background: #f0f0f1;
-    padding: 15px 20px;
-    border-radius: 4px;
-    margin-bottom: 20px;
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 6px;
+    border: 1px solid #e5e5e5;
+    margin-bottom: 24px;
 }
 
 .qentry-url-info p {
-    margin: 0 0 10px 0;
+    margin: 0 0 12px 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+.qentry-url-info p:last-child {
+    margin-bottom: 0;
 }
 
 .qentry-url-info ol {
     margin: 0;
-    padding-left: 20px;
+    padding-left: 24px;
 }
 
 .qentry-url-info li {
-    margin-bottom: 5px;
-    color: #50575e;
+    margin-bottom: 8px;
+    color: #666;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.qentry-url-info li:last-child {
+    margin-bottom: 0;
 }
 
 /* Modal Actions */
 .qentry-modal-actions {
-    text-align: right;
-    padding-top: 15px;
+    padding-top: 20px;
     border-top: 1px solid #e5e5e5;
+    text-align: right;
+}
+
+.qentry-modal-actions .button {
+    margin-left: 8px;
 }
 
 /* Logins List Styles */
 .qentry-logins-list {
     background: #fff;
-    padding: 20px;
-    border-radius: 3px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e5e5;
 }
 
 .qentry-search-form {
-    margin-bottom: 15px;
+    margin-bottom: 24px;
+}
+
+.qentry-search-form .search-box {
+    display: flex;
+    gap: 8px;
+    margin: 0;
+}
+
+.qentry-search-form input[type="search"] {
+    flex: 1;
+    min-width: 200px;
 }
 
 /* Status Badges */
 .qentry-status-badge {
     display: inline-block;
-    padding: 3px 10px;
-    border-radius: 3px;
-    font-size: 12px;
-    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .qentry-status-badge.qentry-active {
-    background: #edfaef;
-    color: #00a32a;
+    background: #f6ffed;
+    color: #22863a;
+    border: 1px solid #85ce61;
 }
 
 .qentry-status-badge.qentry-expired {
-    background: #fcf0f1;
-    color: #d63638;
+    background: #fff1f0;
+    color: #b72c1d;
+    border: 1px solid #ff7875;
 }
 
 /* Action Buttons */
+.qentry-copy-btn,
+.qentry-resend-btn,
+.qentry-delete-btn {
+    transition: all 0.2s ease;
+}
+
 .qentry-copy-btn .dashicons,
 .qentry-resend-btn .dashicons,
 .qentry-delete-btn .dashicons {
@@ -241,45 +498,165 @@
 .qentry-delete-btn:hover {
     background: #d63638;
     color: #fff;
+    border-color: #d63638;
 }
 
 .qentry-copy-btn:hover,
 .qentry-resend-btn:hover {
-    background: #2271b1;
+    background: #0073aa;
     color: #fff;
+    border-color: #0073aa;
 }
 
-/* Responsive */
+/* Logins Table */
+.qentry-logins-table {
+    border-collapse: collapse;
+}
+
+.qentry-logins-table th {
+    background: #f9f9f9;
+    font-weight: 600;
+    padding: 12px;
+    text-align: left;
+    border-bottom: 2px solid #e5e5e5;
+    font-size: 13px;
+    color: #1e1e1e;
+}
+
+.qentry-logins-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e5e5;
+    font-size: 13px;
+}
+
+.qentry-logins-table tr:hover {
+    background: #f9f9f9;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .qentry-form-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .qentry-form-col-third:last-child {
+        grid-column: 1 / -1;
+    }
+}
+
 @media (max-width: 782px) {
     .qentry-admin-wrap {
-        margin-right: 10px;
+        margin: 20px;
     }
-    
-    .qentry-create-form .form-table th {
-        width: auto;
-        display: block;
-        padding-bottom: 5px;
+
+    .qentry-admin-wrap h1 {
+        font-size: 24px;
+        margin-bottom: 20px;
     }
-    
-    .qentry-create-form .form-table td {
-        display: block;
-        padding-top: 5px;
+
+    .qentry-admin-wrap .nav-tab-wrapper {
+        margin-bottom: 20px;
     }
-    
+
+    .qentry-admin-wrap .nav-tab {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    .qentry-create-form {
+        padding: 20px;
+    }
+
+    .qentry-form-row {
+        grid-template-columns: 1fr;
+        gap: 24px;
+        margin-bottom: 24px;
+    }
+
+    .qentry-form-col-third:last-child {
+        grid-column: auto;
+    }
+
+    .qentry-datetime-inputs {
+        flex-direction: column;
+    }
+
+    .qentry-date-picker,
+    .qentry-time-input {
+        width: 100%;
+    }
+
+    .qentry-radio-group-two-col {
+        grid-template-columns: 1fr;
+    }
+
+    .qentry-radio-item {
+        padding: 10px;
+    }
+
     .qentry-url-display {
         flex-direction: column;
     }
-    
+
     .qentry-modal-content {
         width: 95%;
     }
-    
+
+    .qentry-modal-body {
+        padding: 20px;
+    }
+
     .qentry-search-form .search-box {
-        display: flex;
         flex-direction: column;
     }
-    
-    .qentry-search-form .search-box input[type="search"] {
-        margin-bottom: 10px;
+
+    .qentry-search-form input[type="search"] {
+        margin-bottom: 0;
+        min-width: 100%;
+    }
+
+    .qentry-logins-list {
+        padding: 16px;
+    }
+
+    .qentry-logins-table {
+        font-size: 12px;
+    }
+
+    .qentry-logins-table th,
+    .qentry-logins-table td {
+        padding: 8px;
+    }
+}
+
+@media (max-width: 600px) {
+    .qentry-form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .qentry-form-actions button {
+        width: 100%;
+    }
+
+    .qentry-modal-header h2 {
+        font-size: 16px;
+    }
+
+    .qentry-modal-body {
+        padding: 16px;
+    }
+
+    .qentry-url-info {
+        padding: 12px;
+    }
+
+    .qentry-url-info ol {
+        padding-left: 20px;
+    }
+
+    .qentry-url-info li {
+        font-size: 12px;
     }
 }
