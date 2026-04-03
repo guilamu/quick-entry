@@ -149,8 +149,8 @@ class QENTRY_Admin {
         ?>
         <div class="qentry-create-form">
             <form id="qentry-create-form" method="post">
-                <div class="qentry-form-fields">
-                    <div class="qentry-form-field">
+                <div class="qentry-form-row">
+                    <div class="qentry-form-field qentry-form-col-third">
                         <label for="qentry-role" class="qentry-form-label">
                             <?php _e('User Role', 'quick-entry'); ?>
                             <span class="qentry-required">*</span>
@@ -164,7 +164,7 @@ class QENTRY_Admin {
                         <p class="qentry-form-help"><?php _e('The role that will be assigned to the temporary user.', 'quick-entry'); ?></p>
                     </div>
 
-                    <div class="qentry-form-field">
+                    <div class="qentry-form-field qentry-form-col-third">
                         <label for="qentry-email" class="qentry-form-label">
                             <?php _e('Email Address', 'quick-entry'); ?>
                             <span class="qentry-required">*</span>
@@ -173,7 +173,7 @@ class QENTRY_Admin {
                         <p class="qentry-form-help"><?php _e('The verification code will be sent to this email address.', 'quick-entry'); ?></p>
                     </div>
 
-                    <div class="qentry-form-field">
+                    <div class="qentry-form-field qentry-form-col-third">
                         <label class="qentry-form-label">
                             <?php _e('Expiration Date & Time', 'quick-entry'); ?>
                             <span class="qentry-required">*</span>
@@ -184,36 +184,36 @@ class QENTRY_Admin {
                         </div>
                         <p class="qentry-form-help"><?php _e('The URL will expire after this date and time.', 'quick-entry'); ?></p>
                     </div>
+                </div>
 
-                    <div class="qentry-form-field">
-                        <fieldset class="qentry-usage-fieldset">
-                            <legend class="qentry-form-label">
-                                <?php _e('Usage Type', 'quick-entry'); ?>
-                                <span class="qentry-required">*</span>
-                            </legend>
-                            <div class="qentry-radio-group">
-                                <div class="qentry-radio-item">
-                                    <input type="radio" name="qentry_usage_type" value="one_time" checked id="qentry-usage-one-time" class="qentry-radio-input">
-                                    <label for="qentry-usage-one-time" class="qentry-radio-label">
-                                        <span class="qentry-radio-title"><?php _e('One-time use', 'quick-entry'); ?></span>
-                                        <span class="qentry-radio-help"><?php _e('URL can only be used once', 'quick-entry'); ?></span>
-                                    </label>
-                                </div>
-                                <div class="qentry-radio-item">
-                                    <input type="radio" name="qentry_usage_type" value="multiple" id="qentry-usage-multiple" class="qentry-radio-input">
-                                    <label for="qentry-usage-multiple" class="qentry-radio-label">
-                                        <span class="qentry-radio-title"><?php _e('Multiple uses', 'quick-entry'); ?></span>
-                                        <span class="qentry-radio-help"><?php _e('URL can be used a specific number of times', 'quick-entry'); ?></span>
-                                    </label>
-                                </div>
+                <div class="qentry-form-field">
+                    <fieldset class="qentry-usage-fieldset">
+                        <legend class="qentry-form-label">
+                            <?php _e('Usage Type', 'quick-entry'); ?>
+                            <span class="qentry-required">*</span>
+                        </legend>
+                        <div class="qentry-radio-group qentry-radio-group-two-col">
+                            <div class="qentry-radio-item">
+                                <input type="radio" name="qentry_usage_type" value="one_time" checked id="qentry-usage-one-time" class="qentry-radio-input">
+                                <label for="qentry-usage-one-time" class="qentry-radio-label">
+                                    <span class="qentry-radio-title"><?php _e('One-time use', 'quick-entry'); ?></span>
+                                    <span class="qentry-radio-help"><?php _e('URL can only be used once', 'quick-entry'); ?></span>
+                                </label>
                             </div>
-                            <div id="qentry-max-uses-container" class="qentry-max-uses-section">
-                                <label for="qentry-max-uses" class="qentry-form-label-secondary"><?php _e('Maximum number of uses', 'quick-entry'); ?></label>
-                                <input type="number" name="qentry_max_uses" id="qentry-max-uses" class="qentry-form-input qentry-max-uses-input" value="0" min="0">
-                                <p class="qentry-form-help"><?php _e('Enter 0 for unlimited uses.', 'quick-entry'); ?></p>
+                            <div class="qentry-radio-item">
+                                <input type="radio" name="qentry_usage_type" value="multiple" id="qentry-usage-multiple" class="qentry-radio-input">
+                                <label for="qentry-usage-multiple" class="qentry-radio-label">
+                                    <span class="qentry-radio-title"><?php _e('Multiple uses', 'quick-entry'); ?></span>
+                                    <span class="qentry-radio-help"><?php _e('URL can be used a specific number of times', 'quick-entry'); ?></span>
+                                </label>
                             </div>
-                        </fieldset>
-                    </div>
+                        </div>
+                        <div id="qentry-max-uses-container" class="qentry-max-uses-section">
+                            <label for="qentry-max-uses" class="qentry-form-label-secondary"><?php _e('Maximum number of uses', 'quick-entry'); ?></label>
+                            <input type="number" name="qentry_max_uses" id="qentry-max-uses" class="qentry-form-input qentry-max-uses-input" value="0" min="0">
+                            <p class="qentry-form-help"><?php _e('Enter 0 for unlimited uses.', 'quick-entry'); ?></p>
+                        </div>
+                    </fieldset>
                 </div>
 
                 <div class="qentry-form-actions">

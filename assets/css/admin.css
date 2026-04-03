@@ -67,11 +67,11 @@
     border: 1px solid #e5e5e5;
 }
 
-/* Form Fields Container */
-.qentry-form-fields {
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
+/* Form Row - Multi-column layout */
+.qentry-form-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
     margin-bottom: 32px;
 }
 
@@ -80,6 +80,11 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+}
+
+/* Column width utilities */
+.qentry-form-col-third {
+    grid-column: span 1;
 }
 
 /* Form Labels */
@@ -170,6 +175,12 @@ select.qentry-form-input {
 .qentry-radio-group {
     display: flex;
     flex-direction: column;
+    gap: 12px;
+}
+
+.qentry-radio-group-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 12px;
 }
 
@@ -523,6 +534,17 @@ select.qentry-form-input {
 }
 
 /* Responsive Design */
+@media (max-width: 1024px) {
+    .qentry-form-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .qentry-form-col-third:last-child {
+        grid-column: 1 / -1;
+    }
+}
+
 @media (max-width: 782px) {
     .qentry-admin-wrap {
         margin: 20px;
@@ -546,9 +568,14 @@ select.qentry-form-input {
         padding: 20px;
     }
 
-    .qentry-form-fields {
+    .qentry-form-row {
+        grid-template-columns: 1fr;
         gap: 24px;
         margin-bottom: 24px;
+    }
+
+    .qentry-form-col-third:last-child {
+        grid-column: auto;
     }
 
     .qentry-datetime-inputs {
@@ -558,6 +585,10 @@ select.qentry-form-input {
     .qentry-date-picker,
     .qentry-time-input {
         width: 100%;
+    }
+
+    .qentry-radio-group-two-col {
+        grid-template-columns: 1fr;
     }
 
     .qentry-radio-item {
