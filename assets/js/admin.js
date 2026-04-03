@@ -103,48 +103,34 @@
             });
         });
         
-        function toggleMaxUses() {
-            if ($('#qentry-usage-multiple').is(':checked')) {
-                $('#qentry-max-uses-container').addClass('active');
-            } else {
-                $('#qentry-max-uses-container').removeClass('active');
-                $('#qentry-max-uses').val(0);
-            }
-        }
-        
-        $(document).on('change', 'input[name="qentry_usage_type"]', toggleMaxUses);
-        toggleMaxUses();
-        
         $('.qentry-date-picker').datepicker({
             dateFormat: 'mm/dd/yy',
             minDate: 0,
             changeMonth: true,
             changeYear: true
         });
-        
+
         $(document).on('submit', '#qentry-create-form', function(e) {
             e.preventDefault();
-            
+
             var $form = $(this);
             var $btn = $('#qentry-create-btn');
             var $spinner = $('#qentry-loading');
-            
+
             var role = $('#qentry-role').val();
             var email = $('#qentry-email').val();
             var expiryDate = $('#qentry-expiration-date').val();
             var expiryTime = $('#qentry-expiration-time').val();
-            
+            var maxUses = parseInt($('#qentry-max-uses').val()) || 0;
+
             if (!role || !email || !expiryDate || !expiryTime) {
                 alert('Please fill in all required fields.');
                 return;
             }
-            
+
             $btn.prop('disabled', true);
             $spinner.show();
-            
-            var usageType = $('input[name="qentry_usage_type"]:checked').val();
-            var maxUses = usageType === 'one_time' ? 1 : parseInt($('#qentry-max-uses').val()) || 0;
-            
+
             $.ajax({
                 url: qentry_data.ajax_url,
                 type: 'POST',
@@ -155,18 +141,16 @@
                     qentry_email: email,
                     qentry_expiration_date: expiryDate,
                     qentry_expiration_time: expiryTime,
-                    qentry_usage_type: usageType,
                     qentry_max_uses: maxUses
                 },
                 success: function(response) {
                     if (response.success) {
                         $('#qentry-generated-url').val(response.data.url);
                         $('#qentry-modal').fadeIn(200);
-                        
+
                         $form[0].reset();
                         $('#qentry-expiration-time').val('23:59');
                         $('#qentry-max-uses').val(0);
-                        toggleMaxUses();
                     } else {
                         alert(response.data.message || qentry_data.i18n.error);
                     }

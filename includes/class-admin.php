@@ -80,31 +80,174 @@ class QENTRY_Admin {
      * Render main plugin page
      */
     public static function render_main_page() {
-        $active_tab = isset($_GET['qentry_tab']) ? sanitize_text_field($_GET['qentry_tab']) : 'create';
+        $page = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
+        $per_page = 20;
+
+        $logins = QENTRY_Database::get_all_logins($per_page, $page);
+        $total = QENTRY_Database::get_total_count();
+
+        global $wp_roles;
+        $all_roles = array();
+        foreach ($wp_roles->roles as $role_key => $role_data) {
+            $all_roles[$role_key] = translate_user_role($role_data['name']);
+        }
+
+        $roles = self::get_available_roles();
         ?>
         <div class="wrap qentry-admin-wrap">
             <h1 class="wp-heading-inline"><?php _e('QuickEntry', 'quick-entry'); ?></h1>
             <hr class="wp-header-end">
-            
-            <h2 class="nav-tab-wrapper">
-                <a href="<?php echo esc_url(admin_url('admin.php?page=quick-entry&qentry_tab=create')); ?>" class="nav-tab <?php echo $active_tab === 'create' ? 'nav-tab-active' : ''; ?>">
-                    <span class="dashicons dashicons-plus-alt"></span> <?php _e('Create New', 'quick-entry'); ?>
-                </a>
-                <a href="<?php echo esc_url(admin_url('admin.php?page=quick-entry&qentry_tab=logins')); ?>" class="nav-tab <?php echo $active_tab === 'logins' ? 'nav-tab-active' : ''; ?>">
-                    <span class="dashicons dashicons-list-view"></span> <?php _e('All Logins', 'quick-entry'); ?>
-                </a>
-            </h2>
-            
-            <div class="qentry-tab-content" id="qentry-tab-content">
-                <?php
-                if ($active_tab === 'logins') {
-                    self::render_logins_tab();
-                } else {
-                    self::render_create_tab();
-                }
-                ?>
+
+            <!-- Create Login Form -->
+            <div class="qentry-create-section">
+                <div class="qentry-create-form">
+                    <form id="qentry-create-form" method="post">
+                        <div class="qentry-form-row">
+                            <div class="qentry-form-field qentry-form-col-third">
+                                <label for="qentry-role" class="qentry-form-label">
+                                    <?php _e('User Role', 'quick-entry'); ?>
+                                    <span class="qentry-required">*</span>
+                                </label>
+                                <select name="qentry_role" id="qentry-role" class="qentry-form-input" required>
+                                    <option value=""><?php _e('Select a role...', 'quick-entry'); ?></option>
+                                    <?php foreach ($roles as $role_key => $role_name) : ?>
+                                        <option value="<?php echo esc_attr($role_key); ?>"><?php echo esc_html($role_name); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <p class="qentry-form-help"><?php _e('The role that will be assigned to the temporary user.', 'quick-entry'); ?></p>
+                            </div>
+
+                            <div class="qentry-form-field qentry-form-col-third">
+                                <label for="qentry-email" class="qentry-form-label">
+                                    <?php _e('Email Address', 'quick-entry'); ?>
+                                    <span class="qentry-required">*</span>
+                                </label>
+                                <input type="email" name="qentry_email" id="qentry-email" class="qentry-form-input" required placeholder="user@example.com">
+                                <p class="qentry-form-help"><?php _e('The verification code will be sent to this email address.', 'quick-entry'); ?></p>
+                            </div>
+
+                            <div class="qentry-form-field qentry-form-col-third">
+                                <label class="qentry-form-label">
+                                    <?php _e('Expiration Date & Time', 'quick-entry'); ?>
+                                    <span class="qentry-required">*</span>
+                                </label>
+                                <div class="qentry-datetime-inputs">
+                                    <input type="text" name="qentry_expiration_date" id="qentry-expiration-date" class="qentry-form-input qentry-date-picker" required placeholder="mm/dd/yyyy">
+                                    <input type="time" name="qentry_expiration_time" id="qentry-expiration-time" class="qentry-form-input qentry-time-input" value="23:59" required>
+                                </div>
+                                <p class="qentry-form-help"><?php _e('The URL will expire after this date and time.', 'quick-entry'); ?></p>
+                            </div>
+
+                            <div class="qentry-form-field qentry-form-col-third">
+                                <label for="qentry-max-uses" class="qentry-form-label">
+                                    <?php _e('Number of Uses', 'quick-entry'); ?>
+                                </label>
+                                <input type="number" name="qentry_max_uses" id="qentry-max-uses" class="qentry-form-input" value="0" min="0">
+                                <p class="qentry-form-help"><?php _e('Enter 0 for unlimited uses.', 'quick-entry'); ?></p>
+                            </div>
+                        </div>
+
+                        <div class="qentry-form-actions">
+                            <button type="submit" class="button button-primary button-hero" id="qentry-create-btn">
+                                <span class="dashicons dashicons-plus-alt"></span><span><?php _e('Create Temporary Login', 'quick-entry'); ?></span>
+                            </button>
+                            <span id="qentry-loading" class="spinner"></span>
+                        </div>
+                    </form>
+                </div>
             </div>
-            
+
+            <!-- All Logins Section -->
+            <div class="qentry-logins-section">
+                <h2><?php _e('All Logins', 'quick-entry'); ?></h2>
+                <div class="qentry-logins-list">
+                    <table class="wp-list-table widefat fixed striped qentry-logins-table" style="table-layout:auto;">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="manage-column column-id"><?php _e('ID', 'quick-entry'); ?></th>
+                                <th scope="col" class="manage-column column-email"><?php _e('Email', 'quick-entry'); ?></th>
+                                <th scope="col" class="manage-column column-role"><?php _e('Role', 'quick-entry'); ?></th>
+                                <th scope="col" class="manage-column column-usage"><?php _e('Usage', 'quick-entry'); ?></th>
+                                <th scope="col" class="manage-column column-created"><?php _e('Created', 'quick-entry'); ?></th>
+                                <th scope="col" class="manage-column column-expires"><?php _e('Expires', 'quick-entry'); ?></th>
+                                <th scope="col" class="manage-column column-status"><?php _e('Status', 'quick-entry'); ?></th>
+                                <th scope="col" class="manage-column column-actions" style="white-space:nowrap;"><?php _e('Actions', 'quick-entry'); ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($logins)) : ?>
+                                <tr>
+                                    <td colspan="8"><?php _e('No temporary logins found.', 'quick-entry'); ?></td>
+                                </tr>
+                            <?php else : ?>
+                                <?php foreach ($logins as $login) :
+                                    $is_expired = strtotime($login->expires_at) < time();
+                                    $is_used = $login->max_uses > 1 ? $login->use_count >= $login->max_uses : $login->used;
+                                    $login_url = home_url('?qentry=' . $login->token);
+                                ?>
+                                    <tr>
+                                        <td class="column-id"><?php echo esc_html($login->id); ?></td>
+                                        <td class="column-email"><strong><?php echo esc_html($login->email); ?></strong></td>
+                                        <td class="column-role"><?php echo esc_html($all_roles[$login->role] ?? $login->role); ?></td>
+                                        <td class="column-usage">
+                                            <?php if ($login->max_uses == 0) : ?>
+                                                <?php printf(__('%d uses (unlimited)', 'quick-entry'), $login->use_count); ?>
+                                            <?php elseif ($login->max_uses == 1) : ?>
+                                                <?php _e('One-time', 'quick-entry'); ?>
+                                                <?php if ($login->use_count > 0) : ?>
+                                                    (<?php printf(__('used'), 'quick-entry'); ?>)
+                                                <?php endif; ?>
+                                            <?php else : ?>
+                                                <?php printf(__('%d/%d', 'quick-entry'), $login->use_count, $login->max_uses); ?>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td><?php echo esc_html(date('M j, Y H:i', strtotime($login->created_at))); ?></td>
+                                        <td><?php echo esc_html(date('M j, Y H:i', strtotime($login->expires_at))); ?></td>
+                                        <td>
+                                            <?php if ($is_used || $is_expired) : ?>
+                                                <span class="qentry-status-badge qentry-expired"><?php _e('Expired', 'quick-entry'); ?></span>
+                                            <?php else : ?>
+                                                <span class="qentry-status-badge qentry-active"><?php _e('Active', 'quick-entry'); ?></span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="column-actions" style="white-space:nowrap;">
+                                            <?php if (!$is_used && !$is_expired) : ?>
+                                                <button class="button qentry-copy-btn" data-url="<?php echo esc_attr($login_url); ?>" title="<?php _e('Copy login URL', 'quick-entry'); ?>">
+                                                    <span class="dashicons dashicons-clipboard"></span>
+                                                </button>
+                                            <?php endif; ?>
+                                            <button class="button qentry-resend-btn" data-id="<?php echo esc_attr($login->id); ?>" data-email="<?php echo esc_attr($login->email); ?>" title="<?php _e('Resend verification code to this email', 'quick-entry'); ?>">
+                                                <span class="dashicons dashicons-email"></span>
+                                            </button>
+                                            <button class="button qentry-delete-btn button-link-delete" data-id="<?php echo esc_attr($login->id); ?>" title="<?php _e('Delete this temporary login', 'quick-entry'); ?>">
+                                                <span class="dashicons dashicons-trash"></span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+
+                    <?php
+                    if ($total > $per_page) {
+                        echo '<div class="tablenav bottom">';
+                        echo '<div class="tablenav-pages">';
+                        echo paginate_links(array(
+                            'base' => add_query_arg('paged', '%#%'),
+                            'format' => '',
+                            'prev_text' => __('&laquo;', 'quick-entry'),
+                            'next_text' => __('&raquo;', 'quick-entry'),
+                            'total' => ceil($total / $per_page),
+                            'current' => $page,
+                        ));
+                        echo '</div>';
+                        echo '</div>';
+                    }
+                    ?>
+                </div>
+            </div>
+
             <!-- Create Login Modal -->
             <div id="qentry-modal" class="qentry-modal" style="display:none;">
                 <div class="qentry-modal-content">
@@ -184,36 +327,14 @@ class QENTRY_Admin {
                         </div>
                         <p class="qentry-form-help"><?php _e('The URL will expire after this date and time.', 'quick-entry'); ?></p>
                     </div>
-                </div>
 
-                <div class="qentry-form-field">
-                    <fieldset class="qentry-usage-fieldset">
-                        <legend class="qentry-form-label">
-                            <?php _e('Usage Type', 'quick-entry'); ?>
-                            <span class="qentry-required">*</span>
-                        </legend>
-                        <div class="qentry-radio-group qentry-radio-group-two-col">
-                            <div class="qentry-radio-item">
-                                <input type="radio" name="qentry_usage_type" value="one_time" checked id="qentry-usage-one-time" class="qentry-radio-input">
-                                <label for="qentry-usage-one-time" class="qentry-radio-label">
-                                    <span class="qentry-radio-title"><?php _e('One-time use', 'quick-entry'); ?></span>
-                                    <span class="qentry-radio-help"><?php _e('URL can only be used once', 'quick-entry'); ?></span>
-                                </label>
-                            </div>
-                            <div class="qentry-radio-item">
-                                <input type="radio" name="qentry_usage_type" value="multiple" id="qentry-usage-multiple" class="qentry-radio-input">
-                                <label for="qentry-usage-multiple" class="qentry-radio-label">
-                                    <span class="qentry-radio-title"><?php _e('Multiple uses', 'quick-entry'); ?></span>
-                                    <span class="qentry-radio-help"><?php _e('URL can be used a specific number of times', 'quick-entry'); ?></span>
-                                </label>
-                            </div>
-                        </div>
-                        <div id="qentry-max-uses-container" class="qentry-max-uses-section">
-                            <label for="qentry-max-uses" class="qentry-form-label-secondary"><?php _e('Maximum number of uses', 'quick-entry'); ?></label>
-                            <input type="number" name="qentry_max_uses" id="qentry-max-uses" class="qentry-form-input qentry-max-uses-input" value="0" min="0">
-                            <p class="qentry-form-help"><?php _e('Enter 0 for unlimited uses.', 'quick-entry'); ?></p>
-                        </div>
-                    </fieldset>
+                    <div class="qentry-form-field qentry-form-col-third">
+                        <label for="qentry-max-uses" class="qentry-form-label">
+                            <?php _e('Number of Uses', 'quick-entry'); ?>
+                        </label>
+                        <input type="number" name="qentry_max_uses" id="qentry-max-uses" class="qentry-form-input" value="0" min="0">
+                        <p class="qentry-form-help"><?php _e('Enter 0 for unlimited uses.', 'quick-entry'); ?></p>
+                    </div>
                 </div>
 
                 <div class="qentry-form-actions">
@@ -233,18 +354,10 @@ class QENTRY_Admin {
     private static function render_logins_tab() {
         $page = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
         $per_page = 20;
-        $search = isset($_GET['s']) ? sanitize_text_field($_GET['s']) : '';
-        
-        if (!empty($search)) {
-            $logins = QENTRY_Database::search_by_email($search, $per_page, $page);
-            $total = 0;
-        } else {
-            $logins = QENTRY_Database::get_all_logins($per_page, $page);
-            $total = QENTRY_Database::get_total_count();
-        }
-        
-        $roles = self::get_available_roles();
-        // Also get denied roles for display purposes
+
+        $logins = QENTRY_Database::get_all_logins($per_page, $page);
+        $total = QENTRY_Database::get_total_count();
+
         global $wp_roles;
         $all_roles = array();
         foreach ($wp_roles->roles as $role_key => $role_data) {
@@ -252,20 +365,6 @@ class QENTRY_Admin {
         }
         ?>
         <div class="qentry-logins-list">
-            <?php if (!empty($search)) : ?>
-                <p><?php printf(__('Search results for: <strong>%s</strong>', 'quick-entry'), esc_html($search)); ?></p>
-            <?php endif; ?>
-            
-            <form method="get" class="qentry-search-form">
-                <input type="hidden" name="page" value="quick-entry">
-                <input type="hidden" name="qentry_tab" value="logins">
-                <p class="search-box">
-                    <label class="screen-reader-text" for="qentry-search"><?php _e('Search by email:', 'quick-entry'); ?></label>
-                    <input type="search" id="qentry-search" name="s" value="<?php echo esc_attr($search); ?>" placeholder="<?php _e('Search by email...', 'quick-entry'); ?>">
-                    <input type="submit" class="button" value="<?php _e('Search', 'quick-entry'); ?>">
-                </p>
-            </form>
-            
             <table class="wp-list-table widefat fixed striped qentry-logins-table" style="table-layout:auto;">
                 <thead>
                     <tr>
@@ -307,7 +406,7 @@ class QENTRY_Admin {
                                 <td><?php echo esc_html(date('M j, Y H:i', strtotime($login->expires_at))); ?></td>
                                 <td>
                                     <?php if ($is_used || $is_expired) : ?>
-                                        <span class="qentry-status-badge qentry-expired"><?php _e('Expired/Used', 'quick-entry'); ?></span>
+                                        <span class="qentry-status-badge qentry-expired"><?php _e('Expired', 'quick-entry'); ?></span>
                                     <?php else : ?>
                                         <span class="qentry-status-badge qentry-active"><?php _e('Active', 'quick-entry'); ?></span>
                                     <?php endif; ?>
@@ -386,39 +485,41 @@ class QENTRY_Admin {
         $email = sanitize_email($_POST['qentry_email']);
         $expiration_date = sanitize_text_field($_POST['qentry_expiration_date']);
         $expiration_time = sanitize_text_field($_POST['qentry_expiration_time']);
-        $usage_type = sanitize_text_field($_POST['qentry_usage_type'] ?? 'one_time');
-        $max_uses = $usage_type === 'one_time' ? 1 : intval($_POST['qentry_max_uses'] ?? 0);
-        
+        $max_uses = intval($_POST['qentry_max_uses'] ?? 0);
+
         if (!is_email($email)) {
             wp_send_json_error(__('Invalid email address.', 'quick-entry'));
         }
-        
+
         global $wp_roles;
         if (!array_key_exists($role, $wp_roles->roles)) {
             wp_send_json_error(__('Invalid role selected.', 'quick-entry'));
         }
-        
+
         // Validate against denied roles (configurable via qentry_denied_roles filter)
         $denied_roles = apply_filters('qentry_denied_roles', array());
         if (in_array($role, $denied_roles, true)) {
             wp_send_json_error(__('This role cannot be assigned via QuickEntry.', 'quick-entry'));
         }
-        
+
         $expires_at = date('Y-m-d H:i:s', strtotime($expiration_date . ' ' . $expiration_time));
         if (strtotime($expires_at) < time()) {
             wp_send_json_error(__('Expiration date must be in the future.', 'quick-entry'));
         }
-        
+
         // Use random_int() instead of rand() for verification code (C03)
         $verification_code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        
+
+        // Determine usage type based on max_uses
+        $usage_type = ($max_uses == 1 || $max_uses == 0) ? 'one_time' : 'multi_use';
+
         $data = array(
             'email'             => $email,
             'role'              => $role,
             'verification_code' => wp_hash_password($verification_code), // Hash before storing (C04)
             'expires_at'        => $expires_at,
-            'usage_type'        => $usage_type,
             'max_uses'          => $max_uses,
+            'usage_type'        => $usage_type,
         );
         
         $insert_id = QENTRY_Database::insert_login($data);
@@ -506,21 +607,12 @@ class QENTRY_Admin {
      */
     public static function ajax_get_tab_content() {
         check_ajax_referer('qentry_nonce', 'nonce');
-        
+
         if (!current_user_can('manage_options')) {
             wp_send_json_error(__('Permission denied.', 'quick-entry'));
         }
-        
-        $tab = sanitize_text_field($_POST['qentry_tab'] ?? 'create');
-        
-        ob_start();
-        if ($tab === 'logins') {
-            self::render_logins_tab();
-        } else {
-            self::render_create_tab();
-        }
-        $html = ob_get_clean();
-        
-        wp_send_json_success(array('html' => $html));
+
+        // Tab functionality removed - return error
+        wp_send_json_error(__('Tab functionality has been removed.', 'quick-entry'));
     }
 }

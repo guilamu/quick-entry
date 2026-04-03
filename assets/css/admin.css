@@ -70,7 +70,7 @@
 /* Form Row - Multi-column layout */
 .qentry-form-row {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 24px;
     margin-bottom: 32px;
 }
@@ -166,97 +166,11 @@ select.qentry-form-input {
     line-height: 1.5;
 }
 
-/* Usage Type - Radio Buttons Section */
-.qentry-usage-fieldset {
-    border: none;
-    padding: 0;
-    margin: 0;
-}
-
-.qentry-radio-group {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.qentry-radio-group-two-col {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-}
-
-.qentry-radio-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 12px;
-    border-radius: 4px;
-    border: 1px solid transparent;
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
-
-.qentry-radio-item:hover {
-    background: #f0f0f1;
-    border-color: #ddd;
-}
-
-.qentry-radio-input {
-    margin-top: 3px;
-    cursor: pointer;
-    width: 18px;
-    height: 18px;
-    flex-shrink: 0;
-}
-
-.qentry-radio-label {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    cursor: pointer;
-    flex: 1;
-    margin: 0;
-}
-
-.qentry-radio-title {
-    font-weight: 500;
-    color: #1e1e1e;
-    font-size: 14px;
-    display: block;
-}
-
-.qentry-radio-help {
-    font-size: 12px;
-    color: #666;
-    display: block;
-}
-
-/* Max Uses Container */
-.qentry-max-uses-section {
-    margin-top: 16px;
-    padding: 16px;
-    background: #f9f9f9;
-    border-radius: 4px;
-    border: 1px solid #e5e5e5;
-    display: none;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.qentry-max-uses-section.active {
-    display: flex;
-}
-
-.qentry-max-uses-input {
-    width: 120px;
-}
-
 /* Form Actions */
 .qentry-form-actions {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding-top: 24px;
 }
 
 .qentry-form-actions .spinner {
@@ -438,8 +352,22 @@ select.qentry-form-input {
     border: 1px solid #e5e5e5;
 }
 
+.qentry-logins-section {
+    margin-top: 40px;
+}
+
+.qentry-logins-section h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.qentry-create-section {
+    margin-bottom: 0;
+}
+
 .qentry-search-form {
-    margin-bottom: 24px;
+    margin-bottom: 32px;
 }
 
 .qentry-search-form .search-box {
@@ -534,9 +462,16 @@ select.qentry-form-input {
 }
 
 /* Responsive Design */
+@media (max-width: 1200px) {
+    .qentry-form-row {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+}
+
 @media (max-width: 1024px) {
     .qentry-form-row {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(2, 1fr);
         gap: 20px;
     }
 
@@ -585,14 +520,6 @@ select.qentry-form-input {
     .qentry-date-picker,
     .qentry-time-input {
         width: 100%;
-    }
-
-    .qentry-radio-group-two-col {
-        grid-template-columns: 1fr;
-    }
-
-    .qentry-radio-item {
-        padding: 10px;
     }
 
     .qentry-url-display {

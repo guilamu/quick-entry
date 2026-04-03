@@ -106,6 +106,10 @@ add_filter( 'qentry_email_body', function( $body, $code ) {
 
 ## Changelog
 
+### 1.1.2
+- **UI improvements:** Removed tabs and search from admin page, "All Logins" table now displayed under create form
+- **Bug fix:** "Number of Uses" parameter now properly saved and displayed
+
 ### 1.1.1
 - **UI improvements:** Better UI
 
