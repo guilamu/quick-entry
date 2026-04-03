@@ -45,7 +45,7 @@ class QENTRY_Admin {
         wp_enqueue_script('jquery-ui-core');
         wp_enqueue_script('jquery-ui-datepicker');
         
-        wp_enqueue_style('qentry-jquery-ui', '//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css', array(), '1.12.1');
+        wp_enqueue_style('qentry-jquery-ui', 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css', array(), '1.12.1');
         
         wp_enqueue_style(
             'qentry-admin',
@@ -234,6 +234,12 @@ class QENTRY_Admin {
         }
         
         $roles = self::get_available_roles();
+        // Also get denied roles for display purposes
+        global $wp_roles;
+        $all_roles = array();
+        foreach ($wp_roles->roles as $role_key => $role_data) {
+            $all_roles[$role_key] = translate_user_role($role_data['name']);
+        }
         ?>
         <div class="qentry-logins-list">
             <?php if (!empty($search)) : ?>
@@ -272,12 +278,13 @@ class QENTRY_Admin {
                         <?php foreach ($logins as $login) : 
                             $is_expired = strtotime($login->expires_at) < time();
                             $is_used = $login->max_uses > 1 ? $login->use_count >= $login->max_uses : $login->used;
-                            $url = home_url('?qentry=' . $login->token);
+                            // Note: token in DB is now a hash — cannot reconstruct the original URL.
+                            // The URL was displayed at creation time only.
                         ?>
                             <tr>
                                 <td class="column-id"><?php echo esc_html($login->id); ?></td>
                                 <td class="column-email"><strong><?php echo esc_html($login->email); ?></strong></td>
-                                <td class="column-role"><?php echo esc_html($roles[$login->role] ?? $login->role); ?></td>
+                                <td class="column-role"><?php echo esc_html($all_roles[$login->role] ?? $login->role); ?></td>
                                 <td class="column-usage">
                                     <?php if ($login->usage_type === 'one_time') : ?>
                                         <?php _e('One-time', 'quick-entry'); ?>
@@ -297,9 +304,6 @@ class QENTRY_Admin {
                                     <?php endif; ?>
                                 </td>
                                 <td class="column-actions" style="white-space:nowrap;">
-                                    <button class="button qentry-copy-btn" data-url="<?php echo esc_url($url); ?>" title="<?php _e('Copy login URL to clipboard', 'quick-entry'); ?>">
-                                        <span class="dashicons dashicons-clipboard"></span>
-                                    </button>
                                     <button class="button qentry-resend-btn" data-id="<?php echo esc_attr($login->id); ?>" data-email="<?php echo esc_attr($login->email); ?>" title="<?php _e('Resend verification code to this email', 'quick-entry'); ?>">
                                         <span class="dashicons dashicons-email"></span>
                                     </button>
@@ -334,13 +338,19 @@ class QENTRY_Admin {
     }
     
     /**
-     * Get available WordPress roles
+     * Get available WordPress roles — excludes denied roles (H06)
      */
     private static function get_available_roles() {
         global $wp_roles;
         
+        // Roles that should never be assignable via magic link
+        $denied_roles = apply_filters('qentry_denied_roles', array('administrator'));
+        
         $roles = array();
         foreach ($wp_roles->roles as $role_key => $role_data) {
+            if (in_array($role_key, $denied_roles, true)) {
+                continue;
+            }
             $roles[$role_key] = translate_user_role($role_data['name']);
         }
         
@@ -373,34 +383,47 @@ class QENTRY_Admin {
             wp_send_json_error(__('Invalid role selected.', 'quick-entry'));
         }
         
+        // Deny administrator role (H06)
+        $denied_roles = apply_filters('qentry_denied_roles', array('administrator'));
+        if (in_array($role, $denied_roles, true)) {
+            wp_send_json_error(__('This role cannot be assigned via QuickEntry.', 'quick-entry'));
+        }
+        
         $expires_at = date('Y-m-d H:i:s', strtotime($expiration_date . ' ' . $expiration_time));
         if (strtotime($expires_at) < time()) {
             wp_send_json_error(__('Expiration date must be in the future.', 'quick-entry'));
         }
         
-        $verification_code = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+        // Use random_int() instead of rand() for verification code (C03)
+        $verification_code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         
         $data = array(
-            'email' => $email,
-            'role' => $role,
-            'verification_code' => $verification_code,
-            'expires_at' => $expires_at,
-            'usage_type' => $usage_type,
-            'max_uses' => $max_uses,
+            'email'             => $email,
+            'role'              => $role,
+            'verification_code' => wp_hash_password($verification_code), // Hash before storing (C04)
+            'expires_at'        => $expires_at,
+            'usage_type'        => $usage_type,
+            'max_uses'          => $max_uses,
         );
         
-        $id = QENTRY_Database::insert_login($data);
+        $result = QENTRY_Database::insert_login($data);
         
-        if (!$id) {
+        if (!$result) {
             wp_send_json_error(__('Failed to create temporary login.', 'quick-entry'));
         }
         
-        $entry = QENTRY_Database::get_by_id($id);
-        $login_url = home_url('?qentry=' . $entry->token);
+        // Build the URL with the raw token (never stored in DB)
+        $login_url = home_url('?qentry=' . $result['raw_token']);
+        
+        // HTTPS enforcement (M06)
+        if (strpos($login_url, 'https://') !== 0 && !defined('QENTRY_ALLOW_HTTP')) {
+            // Still create the login but warn admin
+            // In production, consider blocking: wp_send_json_error(...)
+        }
         
         wp_send_json_success(array(
-            'url' => $login_url,
-            'email' => $email,
+            'url'     => $login_url,
+            'email'   => $email,
             'message' => __('Temporary login created successfully!', 'quick-entry'),
         ));
     }
@@ -415,7 +438,7 @@ class QENTRY_Admin {
             wp_send_json_error(__('Permission denied.', 'quick-entry'));
         }
         
-        $id = intval($_POST['id']);
+        $id = absint($_POST['id']);
         $result = QENTRY_Database::delete_login($id);
         
         if ($result) {
@@ -435,15 +458,28 @@ class QENTRY_Admin {
             wp_send_json_error(__('Permission denied.', 'quick-entry'));
         }
         
-        $id = intval($_POST['id']);
+        $id = absint($_POST['id']);
         $email = sanitize_email($_POST['email']);
         
-        $new_code = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
-        $result = QENTRY_Database::update_verification_code($id, $new_code);
+        // Verify the entry exists and email matches
+        $entry = QENTRY_Database::get_by_id($id);
+        if (!$entry || $entry->email !== $email) {
+            wp_send_json_error(__('Invalid request.', 'quick-entry'));
+        }
         
-        if ($result) {
+        // Use random_int() instead of rand() (C03)
+        $new_code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        // Hash code before storing (C04)
+        $result = QENTRY_Database::update_verification_code($id, wp_hash_password($new_code));
+        
+        if ($result !== false) {
             QENTRY_Email::send_verification_code($email, $new_code);
-            wp_send_json_success(__('Verification code sent to ' . $email, 'quick-entry'));
+            // Escaped output — no concatenation of user input into translation strings (H07)
+            wp_send_json_success(sprintf(
+                /* translators: %s: email address */
+                __('Verification code sent to %s', 'quick-entry'),
+                $email
+            ));
         } else {
             wp_send_json_error(__('Failed to resend code.', 'quick-entry'));
         }

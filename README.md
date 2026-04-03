@@ -50,7 +50,7 @@ Create temporary login URLs with email verification and role assignment for Word
 
 ### Is this secure?
 
-Yes. Each temporary login uses cryptographically secure random tokens (UUID v4), 6-digit verification codes sent via email, and configurable expiration dates.
+Yes. Each temporary login uses cryptographically secure random tokens (256-bit entropy via `random_bytes()`), tokens and verification codes are stored hashed (SHA-256 / `wp_hash_password()`), 6-digit codes are sent via email, and configurable expiration dates apply.
 
 ### What happens when a temporary login expires?
 
@@ -105,6 +105,23 @@ add_filter( 'qentry_email_body', function( $body, $code ) {
 ```
 
 ## Changelog
+
+### 1.1.0
+- **Security:** Tokens now stored as SHA-256 hashes — raw token never persists in DB
+- **Security:** Switched token generation to `random_bytes(32)` (256-bit CSPRNG)
+- **Security:** Verification codes stored hashed with `wp_hash_password()`
+- **Security:** Replaced all `rand()` calls with `random_int()` (CSPRNG)
+- **Security:** Server-side rate limiting via transients (per-IP + per-token) — PHP sessions removed
+- **Security:** Email flood protection on code resend (max 5 per 10 min per address)
+- **Security:** `wp_clear_auth_cookie()` called before `wp_set_auth_cookie()` (session fixation fix)
+- **Security:** Auth cookie set as session-only (no persistent 14-day "remember me")
+- **Security:** `do_action('wp_login', ...)` fired for audit-trail compatibility
+- **Security:** `administrator` role blocked from magic link assignment
+- **Security:** Generic error message for all invalid/expired/used token states
+- **Security:** `Referrer-Policy: no-referrer` + `Cache-Control: no-store` on verification page
+- **Security:** `textContent` instead of `innerHTML` in admin JS notifications (XSS fix)
+- **Security:** WP-Cron scheduled cleanup of expired tokens (twice daily)
+- **Security:** Prepared LIKE queries in uninstall.php
 
 ### 1.0.0
 - Initial release

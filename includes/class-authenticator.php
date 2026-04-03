@@ -12,50 +12,63 @@ class QENTRY_Authenticator {
     const MAX_ATTEMPTS = 5;
     
     public static function init() {
-        add_action('init', array(__CLASS__, 'maybe_start_session'), 1);
+        // No PHP sessions needed — rate limiting uses transients
     }
     
-    public static function maybe_start_session() {
-        if (isset($_GET['qentry']) && !session_id()) {
-            session_start();
-        }
-    }
-    
+    /**
+     * Verify code and log in user.
+     *
+     * @param string $token Raw token from the URL.
+     * @param string $code  6-digit verification code.
+     * @return array Result with 'success' and 'message' keys.
+     */
     public static function verify_and_login($token, $code) {
+        // Generic failure message — never reveal whether the token is invalid, expired, or used
+        $generic_fail = __('Verification failed. Please check your code and try again.', 'quick-entry');
+        $locked_msg   = __('This link has been temporarily locked due to too many attempts. Please try again later.', 'quick-entry');
+        
+        // Check global rate limit first (per-token, regardless of IP)
+        if (self::get_global_failed_attempts($token) >= self::MAX_ATTEMPTS) {
+            return array('success' => false, 'message' => $locked_msg);
+        }
+        
+        // Check per-IP rate limit
+        if (self::get_failed_attempts($token) >= self::MAX_ATTEMPTS) {
+            return array('success' => false, 'message' => $locked_msg);
+        }
+        
         $entry = QENTRY_Database::get_by_token($token);
         
         if (!$entry) {
-            return array('success' => false, 'message' => __('Invalid login link.', 'quick-entry'));
+            return array('success' => false, 'message' => $generic_fail);
         }
         
         if (strtotime($entry->expires_at) < time()) {
-            return array('success' => false, 'message' => __('This login link has expired.', 'quick-entry'));
+            return array('success' => false, 'message' => $generic_fail);
         }
         
         if ($entry->use_count >= $entry->max_uses) {
-            return array('success' => false, 'message' => __('This login link has been used the maximum number of times.', 'quick-entry'));
+            return array('success' => false, 'message' => $generic_fail);
         }
         
         if ($entry->code_expires_at && strtotime($entry->code_expires_at) < time()) {
             return array('success' => false, 'message' => __('Your verification code has expired. Please request a new one.', 'quick-entry'));
         }
         
-        if ($entry->verification_code !== $code) {
+        // Verify hashed code
+        if (!wp_check_password($code, $entry->verification_code)) {
             self::increment_failed_attempts($token);
-            $attempts = self::get_failed_attempts($token);
-            $remaining = self::MAX_ATTEMPTS - $attempts;
-            
-            if ($remaining <= 0) {
-                return array('success' => false, 'message' => __('Too many failed attempts. Please request a new login link.', 'quick-entry'));
-            }
-            
-            return array('success' => false, 'message' => sprintf(__('Invalid verification code. %d attempts remaining.', 'quick-entry'), $remaining));
+            self::increment_global_failed_attempts($token);
+            return array('success' => false, 'message' => $generic_fail);
         }
         
         self::clear_failed_attempts($token);
         return self::login_user($entry);
     }
     
+    /**
+     * Log in the user after successful verification.
+     */
     private static function login_user($entry) {
         $user = get_user_by('email', $entry->email);
         
@@ -100,42 +113,96 @@ class QENTRY_Authenticator {
             $user = get_user_by('id', $user->ID);
         }
         
+        // Session fixation prevention
+        if (session_id()) {
+            session_regenerate_id(true);
+        }
+        
+        // Clear existing auth cookies before setting new ones
+        wp_clear_auth_cookie();
+        
         wp_set_current_user($user->ID, $user->user_login);
-        wp_set_auth_cookie($user->ID, true);
+        wp_set_auth_cookie($user->ID, false); // false = session cookie, not persistent 14-day "remember me"
+        
+        // Fire wp_login action for audit trail compatibility (WP Activity Log, Wordfence, etc.)
+        do_action('wp_login', $user->user_login, $user);
         
         QENTRY_Database::mark_as_used($entry->id);
         
         set_transient('qentry_temp_login_' . $user->ID, array(
-            'entry_id' => $entry->id,
-            'role' => $entry->role,
+            'entry_id'   => $entry->id,
+            'role'       => $entry->role,
             'expires_at' => $entry->expires_at,
         ), strtotime($entry->expires_at) - time());
         
         return array(
-            'success' => true,
-            'message' => __('Login successful!', 'quick-entry'),
+            'success'      => true,
+            'message'      => __('Login successful!', 'quick-entry'),
             'redirect_url' => admin_url(),
         );
     }
     
+    // -------------------------------------------------------------------------
+    // Rate limiting: per-IP + per-token (uses transients, NOT PHP sessions)
+    // -------------------------------------------------------------------------
+    
+    /**
+     * Get per-IP failed attempts for a token.
+     */
     private static function get_failed_attempts($token) {
-        $session_key = 'qentry_failed_attempts_' . md5($token);
-        return isset($_SESSION[$session_key]) ? intval($_SESSION[$session_key]) : 0;
+        $ip  = self::get_client_ip();
+        $key = 'qentry_attempts_' . md5($token . $ip);
+        return (int) get_transient($key);
     }
     
+    /**
+     * Increment per-IP failed attempts for a token.
+     */
     private static function increment_failed_attempts($token) {
-        $session_key = 'qentry_failed_attempts_' . md5($token);
-        if (!isset($_SESSION[$session_key])) {
-            $_SESSION[$session_key] = 0;
-        }
-        $_SESSION[$session_key]++;
+        $ip       = self::get_client_ip();
+        $key      = 'qentry_attempts_' . md5($token . $ip);
+        $attempts = (int) get_transient($key);
+        set_transient($key, $attempts + 1, 900); // 15-minute window
     }
     
+    /**
+     * Clear per-IP failed attempts for a token.
+     */
     private static function clear_failed_attempts($token) {
-        $session_key = 'qentry_failed_attempts_' . md5($token);
-        unset($_SESSION[$session_key]);
+        $ip  = self::get_client_ip();
+        $key = 'qentry_attempts_' . md5($token . $ip);
+        delete_transient($key);
     }
     
+    /**
+     * Get global failed attempts for a token (regardless of IP).
+     */
+    private static function get_global_failed_attempts($token) {
+        $key = 'qentry_global_attempts_' . md5($token);
+        return (int) get_transient($key);
+    }
+    
+    /**
+     * Increment global failed attempts for a token.
+     */
+    private static function increment_global_failed_attempts($token) {
+        $key      = 'qentry_global_attempts_' . md5($token);
+        $attempts = (int) get_transient($key);
+        set_transient($key, $attempts + 1, 900); // 15-minute window
+    }
+    
+    /**
+     * Get sanitised client IP address.
+     */
+    private static function get_client_ip() {
+        // Only trust REMOTE_ADDR — never raw HTTP_X_FORWARDED_FOR without a proxy whitelist
+        $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '0.0.0.0';
+        return filter_var($ip, FILTER_VALIDATE_IP) ?: '0.0.0.0';
+    }
+    
+    /**
+     * Restore original roles when temporary login expires.
+     */
     public static function restore_original_roles($user_id) {
         $original_roles = get_user_meta($user_id, '_qentry_original_roles', true);
         

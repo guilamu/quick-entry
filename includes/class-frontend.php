@@ -29,39 +29,45 @@ class QENTRY_Frontend {
         $token = sanitize_text_field($_GET['qentry']);
         $entry = QENTRY_Database::get_by_token($token);
         
-        if (!$entry) {
+        // Generic error for all failure states — never reveal whether invalid, expired, or used (M01)
+        $is_valid = $entry
+            && strtotime($entry->expires_at) >= time()
+            && $entry->use_count < $entry->max_uses;
+        
+        if (!$is_valid) {
             wp_die(
-                __('This temporary login link is invalid.', 'quick-entry'),
+                __('This login link is no longer valid.', 'quick-entry'),
                 __('Invalid Link - QuickEntry', 'quick-entry'),
-                array('response' => 404, 'back_link' => true)
+                array('response' => 403, 'back_link' => true)
             );
         }
         
-        if (strtotime($entry->expires_at) < time()) {
-            wp_die(
-                __('This temporary login link has expired.', 'quick-entry'),
-                __('Link Expired - QuickEntry', 'quick-entry'),
-                array('response' => 410, 'back_link' => true)
-            );
-        }
+        // Security headers: prevent token leakage via Referer, prevent caching (H08, M04)
+        header('Referrer-Policy: no-referrer');
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        header('Pragma: no-cache');
         
-        $is_max_uses_reached = $entry->use_count >= $entry->max_uses;
-        if ($is_max_uses_reached) {
-            wp_die(
-                __('This temporary login link has reached its maximum number of uses.', 'quick-entry'),
-                __('Link No Longer Available - QuickEntry', 'quick-entry'),
-                array('response' => 410, 'back_link' => true)
-            );
-        }
-        
-        self::render_verification_page($entry);
+        self::render_verification_page($entry, $token);
         exit;
     }
     
     /**
      * Render verification page
+     *
+     * @param object $entry     The database entry.
+     * @param string $raw_token The raw token from the URL (for form hidden field).
      */
-    private static function render_verification_page($entry) {
+    private static function render_verification_page($entry, $raw_token) {
+        // Server-side guard to prevent email flooding on page refresh (C05)
+        $code_sent_key = 'qentry_code_sent_' . $entry->id;
+        if (!get_transient($code_sent_key)) {
+            $new_code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            // Hash the code before storing (C04)
+            QENTRY_Database::update_verification_code($entry->id, wp_hash_password($new_code));
+            QENTRY_Email::send_verification_code($entry->email, $new_code);
+            set_transient($code_sent_key, true, 60); // 60 second cooldown
+        }
+        
         ob_start();
         ?>
         <!DOCTYPE html>
@@ -73,13 +79,6 @@ class QENTRY_Frontend {
             <?php wp_head(); ?>
         </head>
         <body class="qentry-verify-body login">
-            <?php
-            if (!isset($_GET['code_sent'])) {
-                $new_code = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
-                QENTRY_Database::update_verification_code($entry->id, $new_code);
-                QENTRY_Email::send_verification_code($entry->email, $new_code);
-            }
-            ?>
             <div class="qentry-verify-container">
                 <h1 class="screen-reader-text"><?php _e('Verify Your Identity', 'quick-entry'); ?></h1>
                 <div class="qentry-verify-box">
@@ -97,7 +96,7 @@ class QENTRY_Frontend {
                     <p class="qentry-verify-subtitle" style="text-align:center;margin-bottom:20px;"><?php printf(__('A 6-digit verification code has been sent to <strong>%s</strong>', 'quick-entry'), esc_html($entry->email)); ?></p>
                     
                     <form id="qentry-verify-form" class="qentry-verify-form">
-                        <input type="hidden" name="qentry_token" value="<?php echo esc_attr($entry->token); ?>">
+                        <input type="hidden" name="qentry_token" value="<?php echo esc_attr($raw_token); ?>">
                         
                         <div class="qentry-form-group">
                             <label for="qentry-verification-code"><?php _e('Verification Code', 'quick-entry'); ?></label>
@@ -134,13 +133,13 @@ class QENTRY_Frontend {
             
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
-                    const form = document.getElementById('qentry-verify-form');
-                    const codeInput = document.getElementById('qentry-verification-code');
-                    const messageDiv = document.getElementById('qentry-verify-message');
-                    const submitBtn = document.getElementById('qentry-verify-submit');
-                    const btnText = submitBtn.querySelector('.qentry-btn-text');
-                    const btnLoading = submitBtn.querySelector('.qentry-btn-loading');
-                    const resendBtn = document.getElementById('qentry-resend-code');
+                    var form = document.getElementById('qentry-verify-form');
+                    var codeInput = document.getElementById('qentry-verification-code');
+                    var messageDiv = document.getElementById('qentry-verify-message');
+                    var submitBtn = document.getElementById('qentry-verify-submit');
+                    var btnText = submitBtn.querySelector('.qentry-btn-text');
+                    var btnLoading = submitBtn.querySelector('.qentry-btn-loading');
+                    var resendBtn = document.getElementById('qentry-resend-code');
                     
                     codeInput.addEventListener('input', function() {
                         this.value = this.value.replace(/[^0-9]/g, '');
@@ -155,7 +154,7 @@ class QENTRY_Frontend {
                     });
                     
                     function submitForm() {
-                        const code = codeInput.value;
+                        var code = codeInput.value;
                         if (code.length !== 6) return;
                         
                         btnText.style.display = 'none';
@@ -163,26 +162,26 @@ class QENTRY_Frontend {
                         submitBtn.disabled = true;
                         messageDiv.style.display = 'none';
                         
-                        fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
+                        fetch('<?php echo esc_url(admin_url('admin-ajax.php')); ?>', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                             body: new URLSearchParams({
                                 action: 'qentry_verify_code',
                                 nonce: '<?php echo wp_create_nonce('qentry_verify_nonce'); ?>',
                                 qentry_code: code,
-                                qentry_token: '<?php echo esc_js($entry->token); ?>'
+                                qentry_token: '<?php echo esc_js($raw_token); ?>'
                             })
                         })
-                        .then(response => response.json())
-                        .then(data => {
+                        .then(function(response) { return response.json(); })
+                        .then(function(data) {
                             if (data.success) {
                                 messageDiv.className = 'qentry-message qentry-message-success';
-                                messageDiv.innerHTML = '<?php _e('Verification successful! Redirecting...', 'quick-entry'); ?>';
+                                messageDiv.textContent = '<?php echo esc_js(__('Verification successful! Redirecting...', 'quick-entry')); ?>';
                                 messageDiv.style.display = 'block';
-                                setTimeout(() => { window.location.href = data.data.redirect_url; }, 1500);
+                                setTimeout(function() { window.location.href = data.data.redirect_url; }, 1500);
                             } else {
                                 messageDiv.className = 'qentry-message qentry-message-error';
-                                messageDiv.innerHTML = data.data.message || '<?php _e('Invalid verification code. Please try again.', 'quick-entry'); ?>';
+                                messageDiv.textContent = data.data.message || '<?php echo esc_js(__('Invalid verification code. Please try again.', 'quick-entry')); ?>';
                                 messageDiv.style.display = 'block';
                                 codeInput.value = '';
                                 codeInput.focus();
@@ -191,9 +190,9 @@ class QENTRY_Frontend {
                                 submitBtn.disabled = false;
                             }
                         })
-                        .catch(() => {
+                        .catch(function() {
                             messageDiv.className = 'qentry-message qentry-message-error';
-                            messageDiv.innerHTML = '<?php _e('An error occurred. Please try again.', 'quick-entry'); ?>';
+                            messageDiv.textContent = '<?php echo esc_js(__('An error occurred. Please try again.', 'quick-entry')); ?>';
                             messageDiv.style.display = 'block';
                             btnText.style.display = 'inline';
                             btnLoading.style.display = 'none';
@@ -203,39 +202,39 @@ class QENTRY_Frontend {
                     
                     resendBtn.addEventListener('click', function() {
                         this.disabled = true;
-                        this.textContent = '<?php _e('Sending...', 'quick-entry'); ?>';
+                        this.textContent = '<?php echo esc_js(__('Sending...', 'quick-entry')); ?>';
                         
-                        fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
+                        fetch('<?php echo esc_url(admin_url('admin-ajax.php')); ?>', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                             body: new URLSearchParams({
                                 action: 'qentry_send_code',
                                 nonce: '<?php echo wp_create_nonce('qentry_send_code_nonce'); ?>',
-                                qentry_token: '<?php echo esc_js($entry->token); ?>'
+                                qentry_token: '<?php echo esc_js($raw_token); ?>'
                             })
                         })
-                        .then(response => response.json())
-                        .then(data => {
+                        .then(function(response) { return response.json(); })
+                        .then(function(data) {
                             if (data.success) {
                                 messageDiv.className = 'qentry-message qentry-message-success';
-                                messageDiv.innerHTML = '<?php _e('A new verification code has been sent to your email.', 'quick-entry'); ?>';
+                                messageDiv.textContent = '<?php echo esc_js(__('A new verification code has been sent to your email.', 'quick-entry')); ?>';
                                 messageDiv.style.display = 'block';
-                                resendBtn.textContent = '<?php _e('Code Sent!', 'quick-entry'); ?>';
-                                setTimeout(() => {
+                                resendBtn.textContent = '<?php echo esc_js(__('Code Sent!', 'quick-entry')); ?>';
+                                setTimeout(function() {
                                     resendBtn.disabled = false;
-                                    resendBtn.textContent = '<?php _e('Resend Code', 'quick-entry'); ?>';
+                                    resendBtn.textContent = '<?php echo esc_js(__('Resend Code', 'quick-entry')); ?>';
                                 }, 30000);
                             } else {
                                 messageDiv.className = 'qentry-message qentry-message-error';
-                                messageDiv.innerHTML = data.data.message || '<?php _e('Failed to send code. Please try again.', 'quick-entry'); ?>';
+                                messageDiv.textContent = data.data.message || '<?php echo esc_js(__('Failed to send code. Please try again.', 'quick-entry')); ?>';
                                 messageDiv.style.display = 'block';
                                 resendBtn.disabled = false;
-                                resendBtn.textContent = '<?php _e('Resend Code', 'quick-entry'); ?>';
+                                resendBtn.textContent = '<?php echo esc_js(__('Resend Code', 'quick-entry')); ?>';
                             }
                         })
-                        .catch(() => {
+                        .catch(function() {
                             resendBtn.disabled = false;
-                            resendBtn.textContent = '<?php _e('Resend Code', 'quick-entry'); ?>';
+                            resendBtn.textContent = '<?php echo esc_js(__('Resend Code', 'quick-entry')); ?>';
                         });
                     });
                 });
@@ -272,15 +271,21 @@ class QENTRY_Frontend {
         $code = sanitize_text_field($_POST['qentry_code']);
         $token = sanitize_text_field($_POST['qentry_token']);
         
-        if (!$code || !$token) {
+        // Validate code is a 6-digit numeric string
+        if (!$code || !$token || !preg_match('/^[0-9]{6}$/', $code)) {
             wp_send_json_error(array('message' => __('Missing required fields.', 'quick-entry')));
+        }
+        
+        // Validate token is a hex string
+        if (!preg_match('/^[0-9a-f]{64}$/', $token)) {
+            wp_send_json_error(array('message' => __('Invalid request.', 'quick-entry')));
         }
         
         $result = QENTRY_Authenticator::verify_and_login($token, $code);
         
         if ($result['success']) {
             wp_send_json_success(array(
-                'message' => __('Verification successful!', 'quick-entry'),
+                'message'      => __('Verification successful!', 'quick-entry'),
                 'redirect_url' => admin_url(),
             ));
         } else {
@@ -289,24 +294,48 @@ class QENTRY_Frontend {
     }
     
     /**
-     * AJAX: Send code
+     * AJAX: Send code (resend)
      */
     public static function ajax_send_code() {
         check_ajax_referer('qentry_send_code_nonce', 'nonce');
         
         $token = sanitize_text_field($_POST['qentry_token']);
+        
+        // Validate token format
+        if (!$token || !preg_match('/^[0-9a-f]{64}$/', $token)) {
+            // Generic message — don't reveal whether the token exists (M01)
+            wp_send_json_error(array('message' => __('Invalid request.', 'quick-entry')));
+        }
+        
         $entry = QENTRY_Database::get_by_token($token);
         
         if (!$entry) {
-            wp_send_json_error(array('message' => __('Invalid token.', 'quick-entry')));
+            // Generic message — same response as valid token to prevent enumeration
+            wp_send_json_error(array('message' => __('Invalid request.', 'quick-entry')));
         }
         
-        $new_code = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
-        QENTRY_Database::update_verification_code($entry->id, $new_code);
+        // Rate limit: max 1 code per 60 seconds per token (H02)
+        $rate_key = 'qentry_resend_' . md5($token);
+        if (get_transient($rate_key)) {
+            wp_send_json_error(array('message' => __('Please wait before requesting another code.', 'quick-entry')));
+        }
+        
+        // Rate limit: max 5 codes per 10 minutes per email (H02)
+        $email_rate_key = 'qentry_email_rate_' . md5($entry->email);
+        $email_count = (int) get_transient($email_rate_key);
+        if ($email_count >= 5) {
+            wp_send_json_error(array('message' => __('Too many code requests. Please try again later.', 'quick-entry')));
+        }
+        
+        $new_code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        // Hash code before storing (C04)
+        QENTRY_Database::update_verification_code($entry->id, wp_hash_password($new_code));
         
         $sent = QENTRY_Email::send_verification_code($entry->email, $new_code);
         
         if ($sent) {
+            set_transient($rate_key, true, 60);
+            set_transient($email_rate_key, $email_count + 1, 600);
             wp_send_json_success(array('message' => __('Code sent successfully.', 'quick-entry')));
         } else {
             wp_send_json_error(array('message' => __('Failed to send code.', 'quick-entry')));

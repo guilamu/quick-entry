@@ -22,7 +22,7 @@ class QENTRY_Database {
             token varchar(64) NOT NULL,
             email varchar(255) NOT NULL,
             role varchar(50) NOT NULL,
-            verification_code varchar(6) NOT NULL,
+            verification_code varchar(255) NOT NULL,
             expires_at datetime NOT NULL,
             code_expires_at datetime DEFAULT NULL,
             used tinyint(1) DEFAULT 0,
@@ -47,12 +47,18 @@ class QENTRY_Database {
     public static function activate() {
         self::create_table();
         self::add_default_options();
+        
+        // Schedule cleanup cron job
+        if (!wp_next_scheduled('qentry_cleanup_expired_tokens')) {
+            wp_schedule_event(time(), 'twicedaily', 'qentry_cleanup_expired_tokens');
+        }
     }
     
     /**
      * Plugin deactivation hook
      */
     public static function deactivate() {
+        wp_clear_scheduled_hook('qentry_cleanup_expired_tokens');
         self::cleanup_expired();
     }
     
@@ -66,60 +72,76 @@ class QENTRY_Database {
     }
     
     /**
-     * Clean up expired entries
+     * Clean up expired entries — deletes all expired tokens (used or unused)
      */
     public static function cleanup_expired() {
         global $wpdb;
         
         $table = $wpdb->prefix . 'qentry_tokens';
-        $now = current_time('mysql');
+        $cleanup_days = get_option('qentry_cleanup_days', 30);
+        $cutoff = date('Y-m-d H:i:s', time() - ($cleanup_days * DAY_IN_SECONDS));
         
         $wpdb->query($wpdb->prepare(
-            "DELETE FROM {$table} WHERE expires_at < %s AND used = 1",
-            $now
+            "DELETE FROM {$table} WHERE expires_at < %s",
+            $cutoff
         ));
     }
     
     /**
      * Insert a new temporary login
+     *
+     * @param array $data Login data (email, role, verification_code, expires_at, etc.)
+     * @return array|false Array with 'id' and 'raw_token' on success, false on failure.
      */
     public static function insert_login($data) {
         global $wpdb;
         
         $table = $wpdb->prefix . 'qentry_tokens';
         
+        // Generate a cryptographically secure token (256-bit entropy)
+        $raw_token = bin2hex(random_bytes(32));
+        
         $defaults = array(
-            'token' => wp_generate_uuid4(),
-            'email' => '',
-            'role' => 'subscriber',
+            'token'             => hash('sha256', $raw_token), // Store HASH only, never the raw token
+            'email'             => '',
+            'role'              => 'subscriber',
             'verification_code' => '',
-            'expires_at' => '',
-            'usage_type' => 'one_time',
-            'max_uses' => 1,
+            'expires_at'        => '',
+            'usage_type'        => 'one_time',
+            'max_uses'          => 1,
         );
         
         $data = wp_parse_args($data, $defaults);
         
+        // Ensure the token is always a hash
+        $data['token'] = hash('sha256', $raw_token);
+        
         $result = $wpdb->insert($table, $data);
         
         if ($result) {
-            return $wpdb->insert_id;
+            return array(
+                'id'        => $wpdb->insert_id,
+                'raw_token' => $raw_token,
+            );
         }
         
         return false;
     }
     
     /**
-     * Get a login entry by token
+     * Get a login entry by token — hashes incoming token before lookup
      */
     public static function get_by_token($token) {
         global $wpdb;
         
         $table = $wpdb->prefix . 'qentry_tokens';
         
+        // Hash the incoming raw token to match the stored hash
+        $token_hash = hash('sha256', sanitize_text_field($token));
+        
         return $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM {$table} WHERE token = %s",
-            sanitize_text_field($token)
+            $token_hash
         ));
     }
     
@@ -145,7 +167,7 @@ class QENTRY_Database {
         
         $table = $wpdb->prefix . 'qentry_tokens';
         
-        return $wpdb->update($table, $data, array('id' => $id));
+        return $wpdb->update($table, $data, array('id' => absint($id)));
     }
     
     /**
@@ -156,7 +178,7 @@ class QENTRY_Database {
         
         $table = $wpdb->prefix . 'qentry_tokens';
         
-        return $wpdb->delete($table, array('id' => $id), array('%d'));
+        return $wpdb->delete($table, array('id' => absint($id)), array('%d'));
     }
     
     /**
@@ -188,20 +210,21 @@ class QENTRY_Database {
     
     /**
      * Update verification code and its expiry
+     * The code should be passed already hashed.
      */
-    public static function update_verification_code($id, $code, $expiry_minutes = 10) {
+    public static function update_verification_code($id, $hashed_code, $expiry_minutes = 10) {
         global $wpdb;
         
         $code_expires = current_time('mysql', true);
-        $code_expires = date('Y-m-d H:i:s', strtotime($code_expires . ' +' . $expiry_minutes . ' minutes'));
+        $code_expires = date('Y-m-d H:i:s', strtotime($code_expires . ' +' . intval($expiry_minutes) . ' minutes'));
         
         return $wpdb->update(
             $wpdb->prefix . 'qentry_tokens',
             array(
-                'verification_code' => $code,
-                'code_expires_at' => $code_expires,
+                'verification_code' => $hashed_code,
+                'code_expires_at'   => $code_expires,
             ),
-            array('id' => $id)
+            array('id' => absint($id))
         );
     }
     
@@ -214,20 +237,24 @@ class QENTRY_Database {
         $table = $wpdb->prefix . 'qentry_tokens';
         
         $entry = self::get_by_id($id);
+        if (!$entry) {
+            return false;
+        }
+        
         $new_use_count = $entry->use_count + 1;
         
         if ($new_use_count >= $entry->max_uses) {
             return $wpdb->update($table, array(
-                'used' => 1,
-                'used_at' => current_time('mysql'),
+                'used'      => 1,
+                'used_at'   => current_time('mysql'),
                 'use_count' => $new_use_count,
-            ), array('id' => $id));
+            ), array('id' => absint($id)));
         }
         
         return $wpdb->update($table, array(
-            'used_at' => current_time('mysql'),
+            'used_at'   => current_time('mysql'),
             'use_count' => $new_use_count,
-        ), array('id' => $id));
+        ), array('id' => absint($id)));
     }
     
     /**
@@ -240,7 +267,7 @@ class QENTRY_Database {
         
         return $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM {$table} WHERE id = %d",
-            $id
+            absint($id)
         ));
     }
     

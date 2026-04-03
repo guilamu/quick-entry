@@ -305,7 +305,8 @@
         
         function showNotification(message, type) {
             var className = type === 'success' ? 'notice-success' : 'notice-error';
-            var $notice = $('<div class="notice ' + className + ' is-dismissible"><p>' + message + '</p></div>');
+            var $notice = $('<div class="notice ' + className + ' is-dismissible"><p></p></div>');
+            $notice.find('p').text(message); // Use .text() (textContent) instead of HTML injection to prevent XSS
             
             $('.notice').remove();
             
