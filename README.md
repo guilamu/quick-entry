@@ -106,9 +106,6 @@ add_filter( 'qentry_email_body', function( $body, $code ) {
 
 ## Changelog
 
-### 1.1.2
-- **AUTO DRAFT TEST**
-
 ### 1.1.1
 - **UI improvements:** Better UI
 
