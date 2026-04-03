@@ -111,7 +111,7 @@ class QENTRY_Database {
      * Insert a new temporary login
      *
      * @param array $data Login data (email, role, verification_code, expires_at, etc.)
-     * @return array|false Array with 'id' and 'raw_token' on success, false on failure.
+     * @return int|false Insert ID on success, false on failure.
      */
     public static function insert_login($data) {
         global $wpdb;
@@ -119,10 +119,10 @@ class QENTRY_Database {
         $table = $wpdb->prefix . 'qentry_tokens';
         
         // Generate a cryptographically secure token (256-bit entropy)
-        $raw_token = bin2hex(random_bytes(32));
+        $token = bin2hex(random_bytes(32));
         
         $defaults = array(
-            'token'             => hash('sha256', $raw_token), // Store HASH only, never the raw token
+            'token'             => $token,
             'email'             => '',
             'role'              => 'subscriber',
             'verification_code' => '',
@@ -133,35 +133,29 @@ class QENTRY_Database {
         
         $data = wp_parse_args($data, $defaults);
         
-        // Ensure the token is always a hash
-        $data['token'] = hash('sha256', $raw_token);
+        // Ensure the generated token is always used
+        $data['token'] = $token;
         
         $result = $wpdb->insert($table, $data);
         
         if ($result) {
-            return array(
-                'id'        => $wpdb->insert_id,
-                'raw_token' => $raw_token,
-            );
+            return $wpdb->insert_id;
         }
         
         return false;
     }
     
     /**
-     * Get a login entry by token — hashes incoming token before lookup
+     * Get a login entry by token
      */
     public static function get_by_token($token) {
         global $wpdb;
         
         $table = $wpdb->prefix . 'qentry_tokens';
         
-        // Hash the incoming raw token to match the stored hash
-        $token_hash = hash('sha256', sanitize_text_field($token));
-        
         return $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM {$table} WHERE token = %s",
-            $token_hash
+            sanitize_text_field($token)
         ));
     }
     

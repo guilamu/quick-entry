@@ -278,8 +278,7 @@ class QENTRY_Admin {
                         <?php foreach ($logins as $login) : 
                             $is_expired = strtotime($login->expires_at) < time();
                             $is_used = $login->max_uses > 1 ? $login->use_count >= $login->max_uses : $login->used;
-                            // Note: token in DB is now a hash — cannot reconstruct the original URL.
-                            // The URL was displayed at creation time only.
+                            $login_url = home_url('?qentry=' . $login->token);
                         ?>
                             <tr>
                                 <td class="column-id"><?php echo esc_html($login->id); ?></td>
@@ -304,6 +303,11 @@ class QENTRY_Admin {
                                     <?php endif; ?>
                                 </td>
                                 <td class="column-actions" style="white-space:nowrap;">
+                                    <?php if (!$is_used && !$is_expired) : ?>
+                                        <button class="button qentry-copy-btn" data-url="<?php echo esc_attr($login_url); ?>" title="<?php _e('Copy login URL', 'quick-entry'); ?>">
+                                            <span class="dashicons dashicons-clipboard"></span>
+                                        </button>
+                                    <?php endif; ?>
                                     <button class="button qentry-resend-btn" data-id="<?php echo esc_attr($login->id); ?>" data-email="<?php echo esc_attr($login->email); ?>" title="<?php _e('Resend verification code to this email', 'quick-entry'); ?>">
                                         <span class="dashicons dashicons-email"></span>
                                     </button>
@@ -407,14 +411,15 @@ class QENTRY_Admin {
             'max_uses'          => $max_uses,
         );
         
-        $result = QENTRY_Database::insert_login($data);
+        $insert_id = QENTRY_Database::insert_login($data);
         
-        if (!$result) {
+        if (!$insert_id) {
             wp_send_json_error(__('Failed to create temporary login.', 'quick-entry'));
         }
         
-        // Build the URL with the raw token (never stored in DB)
-        $login_url = home_url('?qentry=' . $result['raw_token']);
+        // Fetch the newly created entry to get the token for URL
+        $entry = QENTRY_Database::get_by_id($insert_id);
+        $login_url = home_url('?qentry=' . $entry->token);
         
         // HTTPS enforcement (M06)
         if (strpos($login_url, 'https://') !== 0 && !defined('QENTRY_ALLOW_HTTP')) {
