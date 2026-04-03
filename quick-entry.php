@@ -3,7 +3,7 @@
  * Plugin Name: QuickEntry
  * Plugin URI: https://github.com/guilamu/quick-entry
  * Description: Create temporary login URLs with email verification and role assignment.
- * Version: 1.1.0
+ * Version: 1.1.1
  * Author: guilamu
  * Author URI: https://github.com/guilamu
  * License: GPL v2 or later
@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
 
 define('QENTRY_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('QENTRY_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('QENTRY_PLUGIN_VERSION', '1.1.0');
+define('QENTRY_PLUGIN_VERSION', '1.1.1');
 
 // Include required files
 require_once QENTRY_PLUGIN_DIR . 'includes/class-database.php';
