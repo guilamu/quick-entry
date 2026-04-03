@@ -32,7 +32,7 @@ class QENTRY_Frontend {
         // Generic error for all failure states — never reveal whether invalid, expired, or used (M01)
         $is_valid = $entry
             && strtotime($entry->expires_at) >= time()
-            && $entry->use_count < $entry->max_uses;
+            && ($entry->max_uses == 0 || $entry->use_count < $entry->max_uses);
         
         if (!$is_valid) {
             wp_die(

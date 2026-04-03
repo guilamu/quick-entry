@@ -257,7 +257,7 @@ class QENTRY_Database {
         
         $new_use_count = $entry->use_count + 1;
         
-        if ($new_use_count >= $entry->max_uses) {
+        if ($entry->max_uses > 0 && $new_use_count >= $entry->max_uses) {
             return $wpdb->update($table, array(
                 'used'      => 1,
                 'used_at'   => current_time('mysql'),

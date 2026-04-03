@@ -47,7 +47,7 @@ class QENTRY_Authenticator {
             return array('success' => false, 'message' => $generic_fail);
         }
         
-        if ($entry->use_count >= $entry->max_uses) {
+        if ($entry->max_uses > 0 && $entry->use_count >= $entry->max_uses) {
             return array('success' => false, 'message' => $generic_fail);
         }
         
