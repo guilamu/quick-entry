@@ -145,16 +145,17 @@ select.qentry-form-input {
 .qentry-datetime-inputs {
     display: flex;
     gap: 12px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 }
 
 .qentry-date-picker {
     flex: 1;
-    min-width: 200px;
+    min-width: 0;
 }
 
 .qentry-time-input {
-    width: 140px;
+    width: 120px;
+    flex-shrink: 0;
 }
 
 /* Help Text */
@@ -256,7 +257,6 @@ select.qentry-form-input {
     align-items: center;
     gap: 12px;
     padding-top: 24px;
-    border-top: 1px solid #e5e5e5;
 }
 
 .qentry-form-actions .spinner {
