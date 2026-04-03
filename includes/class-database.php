@@ -46,11 +46,31 @@ class QENTRY_Database {
      */
     public static function activate() {
         self::create_table();
+        self::maybe_upgrade();
         self::add_default_options();
         
         // Schedule cleanup cron job
         if (!wp_next_scheduled('qentry_cleanup_expired_tokens')) {
             wp_schedule_event(time(), 'twicedaily', 'qentry_cleanup_expired_tokens');
+        }
+    }
+    
+    /**
+     * Run DB schema upgrades if needed.
+     * Called on activation and on admin_init to catch upgrades without deactivate/reactivate.
+     */
+    public static function maybe_upgrade() {
+        $db_version = get_option('qentry_db_version', '1.0.0');
+        
+        if (version_compare($db_version, '1.1.0', '<')) {
+            global $wpdb;
+            $table = $wpdb->prefix . 'qentry_tokens';
+            
+            // Widen verification_code to hold hashed values (wp_hash_password output ~60 chars)
+            // Also widen token to 64 chars for SHA-256 hex output (already 64 in CREATE but may be outdated)
+            $wpdb->query("ALTER TABLE {$table} MODIFY verification_code varchar(255) NOT NULL DEFAULT ''");
+            
+            update_option('qentry_db_version', '1.1.0');
         }
     }
     
