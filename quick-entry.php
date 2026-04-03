@@ -60,6 +60,9 @@ class Quick_Entry {
         
         // Register WP-Cron hook for expired token cleanup (M03)
         add_action('qentry_cleanup_expired_tokens', array('QENTRY_Database', 'cleanup_expired'));
+        
+        // Run DB upgrades if needed (auto-migrate without deactivate/reactivate)
+        add_action('admin_init', array('QENTRY_Database', 'maybe_upgrade'));
     }
     
     public function load_textdomain() {
