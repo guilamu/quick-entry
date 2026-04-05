@@ -428,6 +428,10 @@ class QENTRY_Logger {
         $where_clause = implode(' AND ', $where);
         $query = "SELECT COUNT(*) FROM {$table} WHERE {$where_clause}";
 
+        if (empty($params)) {
+            return $wpdb->get_var($query);
+        }
+
         return $wpdb->get_var($wpdb->prepare($query, $params));
     }
 

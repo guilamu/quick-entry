@@ -114,42 +114,55 @@ class QENTRY_Admin {
                 <div class="qentry-create-form">
                     <form id="qentry-create-form" method="post">
                         <div class="qentry-form-row">
-                            <div class="qentry-form-field qentry-form-col-third">
+                            <div class="qentry-form-field">
                                 <label for="qentry-role" class="qentry-form-label">
                                     <?php _e('User Role', 'quick-entry'); ?>
                                     <span class="qentry-required">*</span>
                                 </label>
-                                <select name="qentry_role" id="qentry-role" class="qentry-form-input" required>
-                                    <option value=""><?php _e('Select a role...', 'quick-entry'); ?></option>
-                                    <?php foreach ($roles as $role_key => $role_name) : ?>
-                                        <option value="<?php echo esc_attr($role_key); ?>"><?php echo esc_html($role_name); ?></option>
-                                    <?php endforeach; ?>
-                                </select>
+                                <div class="qentry-input-wrapper qentry-select-wrapper">
+                                    <span class="qentry-input-icon dashicons dashicons-admin-users"></span>
+                                    <select name="qentry_role" id="qentry-role" class="qentry-form-input" required>
+                                        <?php foreach ($roles as $role_key => $role_name) : ?>
+                                            <option value="<?php echo esc_attr($role_key); ?>"><?php echo esc_html($role_name); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
                                 <p class="qentry-form-help"><?php _e('The role that will be assigned to the temporary user.', 'quick-entry'); ?></p>
                             </div>
 
-                            <div class="qentry-form-field qentry-form-col-third">
+                            <div class="qentry-form-field">
                                 <label for="qentry-email" class="qentry-form-label">
                                     <?php _e('Email Address', 'quick-entry'); ?>
                                     <span class="qentry-required">*</span>
                                 </label>
-                                <input type="email" name="qentry_email" id="qentry-email" class="qentry-form-input" required placeholder="user@example.com">
+                                <div class="qentry-input-wrapper">
+                                    <span class="qentry-input-icon dashicons dashicons-email"></span>
+                                    <input type="email" name="qentry_email" id="qentry-email" class="qentry-form-input" required placeholder="user@example.com">
+                                </div>
                                 <p class="qentry-form-help"><?php _e('The verification code will be sent to this email address.', 'quick-entry'); ?></p>
                             </div>
+                        </div>
 
-                            <div class="qentry-form-field qentry-form-col-third">
+                        <div class="qentry-form-row">
+                            <div class="qentry-form-field">
                                 <label class="qentry-form-label">
                                     <?php _e('Expiration Date & Time', 'quick-entry'); ?>
                                     <span class="qentry-required">*</span>
                                 </label>
                                 <div class="qentry-datetime-inputs">
-                                    <input type="text" name="qentry_expiration_date" id="qentry-expiration-date" class="qentry-form-input qentry-date-picker" required placeholder="mm/dd/yyyy">
-                                    <input type="time" name="qentry_expiration_time" id="qentry-expiration-time" class="qentry-form-input qentry-time-input" value="23:59" required>
+                                    <div class="qentry-input-wrapper">
+                                        <span class="qentry-input-icon dashicons dashicons-calendar"></span>
+                                        <input type="text" name="qentry_expiration_date" id="qentry-expiration-date" class="qentry-form-input qentry-date-picker" required placeholder="mm/dd/yyyy">
+                                    </div>
+                                    <div class="qentry-input-wrapper qentry-time-wrapper">
+                                        <span class="qentry-input-icon dashicons dashicons-clock"></span>
+                                        <input type="time" name="qentry_expiration_time" id="qentry-expiration-time" class="qentry-form-input qentry-time-input" value="23:59" required>
+                                    </div>
                                 </div>
                                 <p class="qentry-form-help"><?php _e('The URL will expire after this date and time.', 'quick-entry'); ?></p>
                             </div>
 
-                            <div class="qentry-form-field qentry-form-col-third">
+                            <div class="qentry-form-field">
                                 <label for="qentry-max-uses" class="qentry-form-label">
                                     <?php _e('Number of Uses', 'quick-entry'); ?>
                                 </label>
@@ -159,10 +172,10 @@ class QENTRY_Admin {
                         </div>
 
                         <div class="qentry-form-actions">
-                            <button type="submit" class="button button-primary button-hero" id="qentry-create-btn">
-                                <span class="dashicons dashicons-plus-alt"></span><span><?php _e('Create Temporary Login', 'quick-entry'); ?></span>
+                            <button type="submit" class="qentry-btn qentry-btn-primary" id="qentry-create-btn">
+                                <span class="dashicons dashicons-plus-alt2"></span>
+                                <span><?php _e('Create Temporary Login', 'quick-entry'); ?></span>
                             </button>
-                            <span id="qentry-loading" class="spinner"></span>
                         </div>
                     </form>
                 </div>
@@ -408,60 +421,75 @@ class QENTRY_Admin {
     private static function render_create_tab() {
         $roles = self::get_available_roles();
         ?>
-        <div class="qentry-create-form">
-            <form id="qentry-create-form" method="post">
-                <div class="qentry-form-row">
-                    <div class="qentry-form-field qentry-form-col-third">
-                        <label for="qentry-role" class="qentry-form-label">
-                            <?php _e('User Role', 'quick-entry'); ?>
-                            <span class="qentry-required">*</span>
-                        </label>
-                        <select name="qentry_role" id="qentry-role" class="qentry-form-input" required>
-                            <option value=""><?php _e('Select a role...', 'quick-entry'); ?></option>
-                            <?php foreach ($roles as $role_key => $role_name) : ?>
-                                <option value="<?php echo esc_attr($role_key); ?>"><?php echo esc_html($role_name); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                        <p class="qentry-form-help"><?php _e('The role that will be assigned to the temporary user.', 'quick-entry'); ?></p>
-                    </div>
-
-                    <div class="qentry-form-field qentry-form-col-third">
-                        <label for="qentry-email" class="qentry-form-label">
-                            <?php _e('Email Address', 'quick-entry'); ?>
-                            <span class="qentry-required">*</span>
-                        </label>
-                        <input type="email" name="qentry_email" id="qentry-email" class="qentry-form-input" required placeholder="user@example.com">
-                        <p class="qentry-form-help"><?php _e('The verification code will be sent to this email address.', 'quick-entry'); ?></p>
-                    </div>
-
-                    <div class="qentry-form-field qentry-form-col-third">
-                        <label class="qentry-form-label">
-                            <?php _e('Expiration Date & Time', 'quick-entry'); ?>
-                            <span class="qentry-required">*</span>
-                        </label>
-                        <div class="qentry-datetime-inputs">
-                            <input type="text" name="qentry_expiration_date" id="qentry-expiration-date" class="qentry-form-input qentry-date-picker" required placeholder="mm/dd/yyyy">
-                            <input type="time" name="qentry_expiration_time" id="qentry-expiration-time" class="qentry-form-input qentry-time-input" value="23:59" required>
+        <div class="qentry-create-section">
+            <div class="qentry-create-form">
+                <form id="qentry-create-form" method="post">
+                    <div class="qentry-form-row">
+                        <div class="qentry-form-field">
+                            <label for="qentry-role" class="qentry-form-label">
+                                <?php _e('User Role', 'quick-entry'); ?>
+                                <span class="qentry-required">*</span>
+                            </label>
+                            <div class="qentry-input-wrapper qentry-select-wrapper">
+                                <span class="qentry-input-icon dashicons dashicons-admin-users"></span>
+                                <select name="qentry_role" id="qentry-role" class="qentry-form-input" required>
+                                    <?php foreach ($roles as $role_key => $role_name) : ?>
+                                        <option value="<?php echo esc_attr($role_key); ?>"><?php echo esc_html($role_name); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <p class="qentry-form-help"><?php _e('The role that will be assigned to the temporary user.', 'quick-entry'); ?></p>
                         </div>
-                        <p class="qentry-form-help"><?php _e('The URL will expire after this date and time.', 'quick-entry'); ?></p>
+
+                        <div class="qentry-form-field">
+                            <label for="qentry-email" class="qentry-form-label">
+                                <?php _e('Email Address', 'quick-entry'); ?>
+                                <span class="qentry-required">*</span>
+                            </label>
+                            <div class="qentry-input-wrapper">
+                                <span class="qentry-input-icon dashicons dashicons-email"></span>
+                                <input type="email" name="qentry_email" id="qentry-email" class="qentry-form-input" required placeholder="user@example.com">
+                            </div>
+                            <p class="qentry-form-help"><?php _e('The verification code will be sent to this email address.', 'quick-entry'); ?></p>
+                        </div>
                     </div>
 
-                    <div class="qentry-form-field qentry-form-col-third">
-                        <label for="qentry-max-uses" class="qentry-form-label">
-                            <?php _e('Number of Uses', 'quick-entry'); ?>
-                        </label>
-                        <input type="number" name="qentry_max_uses" id="qentry-max-uses" class="qentry-form-input" value="0" min="0">
-                        <p class="qentry-form-help"><?php _e('Enter 0 for unlimited uses.', 'quick-entry'); ?></p>
-                    </div>
-                </div>
+                    <div class="qentry-form-row">
+                        <div class="qentry-form-field">
+                            <label class="qentry-form-label">
+                                <?php _e('Expiration Date & Time', 'quick-entry'); ?>
+                                <span class="qentry-required">*</span>
+                            </label>
+                            <div class="qentry-datetime-inputs">
+                                <div class="qentry-input-wrapper">
+                                    <span class="qentry-input-icon dashicons dashicons-calendar"></span>
+                                    <input type="text" name="qentry_expiration_date" id="qentry-expiration-date" class="qentry-form-input qentry-date-picker" required placeholder="mm/dd/yyyy">
+                                </div>
+                                <div class="qentry-input-wrapper qentry-time-wrapper">
+                                    <span class="qentry-input-icon dashicons dashicons-clock"></span>
+                                    <input type="time" name="qentry_expiration_time" id="qentry-expiration-time" class="qentry-form-input qentry-time-input" value="23:59" required>
+                                </div>
+                            </div>
+                            <p class="qentry-form-help"><?php _e('The URL will expire after this date and time.', 'quick-entry'); ?></p>
+                        </div>
 
-                <div class="qentry-form-actions">
-                    <button type="submit" class="button button-primary button-hero" id="qentry-create-btn">
-                        <span class="dashicons dashicons-plus-alt"></span><span><?php _e('Create Temporary Login', 'quick-entry'); ?></span>
-                    </button>
-                    <span id="qentry-loading" class="spinner"></span>
-                </div>
-            </form>
+                        <div class="qentry-form-field">
+                            <label for="qentry-max-uses" class="qentry-form-label">
+                                <?php _e('Number of Uses', 'quick-entry'); ?>
+                            </label>
+                            <input type="number" name="qentry_max_uses" id="qentry-max-uses" class="qentry-form-input" value="0" min="0">
+                            <p class="qentry-form-help"><?php _e('Enter 0 for unlimited uses.', 'quick-entry'); ?></p>
+                        </div>
+                    </div>
+
+                    <div class="qentry-form-actions">
+                        <button type="submit" class="qentry-btn qentry-btn-primary" id="qentry-create-btn">
+                            <span class="dashicons dashicons-plus-alt2"></span>
+                            <span><?php _e('Create Temporary Login', 'quick-entry'); ?></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
         <?php
     }

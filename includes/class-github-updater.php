@@ -269,7 +269,9 @@ class QuickEntry_GitHub_Updater
     /**
      * Provide plugin information for the WordPress plugin details popup.
      *
-     * Reads sections from the local README.md instead of fetching from the GitHub release body.
+     * Reads sections (description, installation, FAQ, changelog) from the
+     * local README.md. When an update is available, the GitHub release body
+     * is prepended to the changelog so users see what's new before updating.
      *
      * @param false|object|array $res    The result object or array.
      * @param string             $action The type of information being requested.
@@ -294,11 +296,13 @@ class QuickEntry_GitHub_Updater
             ? ltrim($release_data['tag_name'], 'v')
             : ($plugin_data['Version'] ?? '1.0.0');
 
-        // Always return a valid stdClass to prevent WordPress from falling back to WordPress.org API
+        // IMPORTANT: Always return a valid stdClass to prevent WordPress from
+        // falling back to WordPress.org API (which fails with "Plugin not found"
+        // for custom/GitHub-hosted plugins).
         $res               = new stdClass();
         $res->name         = self::PLUGIN_NAME;
         $res->slug         = self::PLUGIN_SLUG;
-        $res->plugin       = self::PLUGIN_FILE;
+        $res->plugin       = self::PLUGIN_FILE; // CRITICAL for install status detection
         $res->version      = $version;
         $res->author       = sprintf('<a href="https://github.com/%s">%s</a>', self::GITHUB_USER, self::GITHUB_USER);
         $res->homepage     = sprintf('https://github.com/%s/%s', self::GITHUB_USER, self::GITHUB_REPO);
@@ -312,6 +316,9 @@ class QuickEntry_GitHub_Updater
         }
 
         // Build sections from local README.md.
+        // Only add tabs whose content is non-empty — WordPress displays
+        // a tab for every key present in the sections array, so omitting
+        // a key hides the tab entirely.
         $readme = self::parse_readme();
 
         $res->sections = array(
@@ -328,8 +335,23 @@ class QuickEntry_GitHub_Updater
             $res->sections['faq'] = $readme['faq'];
         }
 
-        $res->sections['changelog'] = !empty($readme['changelog'])
-            ? $readme['changelog']
+        // When an update is available, the local README only contains the
+        // installed version's changelog.  Prepend the GitHub release body
+        // so the user sees what's new in the upcoming version.
+        $changelog_html      = '';
+        $installed_version   = $plugin_data['Version'] ?? '0.0.0';
+
+        if ($release_data && !empty($release_data['body']) && version_compare($installed_version, $version, '<')) {
+            $changelog_html .= '<h4>' . esc_html($version) . '</h4>'
+                             . self::markdown_to_html($release_data['body']);
+        }
+
+        if (!empty($readme['changelog'])) {
+            $changelog_html .= $readme['changelog'];
+        }
+
+        $res->sections['changelog'] = !empty($changelog_html)
+            ? $changelog_html
             : sprintf(
                 '<p>See <a href="https://github.com/%s/%s/releases" target="_blank">GitHub releases</a> for changelog.</p>',
                 esc_attr(self::GITHUB_USER),
@@ -340,7 +362,15 @@ class QuickEntry_GitHub_Updater
     }
 
     /**
-     * Inject CSS overrides and optional sidebar info in the plugin-information iframe.
+     * Inject CSS overrides in the plugin-information iframe.
+     *
+     * wp_kses_post() strips <style> tags from section content, so CSS must be
+     * injected via the admin_head hook which fires inside the iframe's <head>.
+     *
+     * A CSS geometric pattern replaces the banner image area: WordPress only adds
+     * the `with-banner` class to #plugin-information-title when $api->banners
+     * contains real image URLs. A small JS snippet adds the class manually so the
+     * CSS pattern and h2 styling apply without any external image.
      */
     public static function plugin_info_css(): void
     {
@@ -367,7 +397,7 @@ class QuickEntry_GitHub_Updater
             . 'var(--c1) 0 calc(500%/6), var(--c2) 0)';
 
         echo '<style>'
-            // CSS geometric pattern banner.
+            // CSS geometric pattern banner (replaces banner image).
             . '#plugin-information-title.with-banner {'
             .   $pattern_css
             .   'background: ' . $pattern_bg . ' !important;'
@@ -400,7 +430,7 @@ class QuickEntry_GitHub_Updater
             . '.md-th > span { font-weight: 600; background: #f5f5f5; }'
             . '</style>';
 
-        // JS: add with-banner class.
+        // JS: add with-banner class (WordPress only adds it for real banner images).
         echo '<script>'
             . 'document.addEventListener("DOMContentLoaded",function(){'
             . 'var title=document.getElementById("plugin-information-title");'
@@ -474,6 +504,18 @@ class QuickEntry_GitHub_Updater
 
     /**
      * Convert Markdown to HTML using Parsedown.
+     *
+     * Images are stripped before conversion since they are not useful
+     * inside the WordPress plugin-information modal.
+     *
+     * IMPORTANT: WordPress install_plugin_information() sanitizes section
+     * content with wp_kses() using $plugins_allowedtags — which does NOT
+     * include <table>, <tr>, <th>, <td>. Tables generated by Parsedown
+     * are therefore converted to <div>/<span> structures via tables_to_divs()
+     * and styled with CSS injected through admin_head (see plugin_info_css()).
+     *
+     * @param string $markdown Markdown content to convert.
+     * @return string HTML content safe for wp_kses.
      */
     private static function markdown_to_html(string $markdown): string
     {
@@ -501,6 +543,21 @@ class QuickEntry_GitHub_Updater
 
     /**
      * Convert HTML tables to div/span structures compatible with wp_kses.
+     *
+     * WordPress plugin info modal only allows: div (with class), span (with class),
+     * p, strong, em, code, a, ul, ol, li, h1-h6, pre, br, img.
+     * Table elements (table, thead, tbody, tr, th, td) are stripped entirely.
+     *
+     * This method replaces <table> with CSS-table divs:
+     * - <div class="md-table">  → display: table
+     * - <div class="md-tr">     → display: table-row
+     * - <div class="md-tr md-th"> → header row (bold + background)
+     * - <span>                  → display: table-cell
+     *
+     * The corresponding CSS is injected by plugin_info_css() via admin_head.
+     *
+     * @param string $html HTML containing <table> elements.
+     * @return string HTML with tables replaced by styled div/span.
      */
     private static function tables_to_divs(string $html): string
     {

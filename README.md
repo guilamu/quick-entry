@@ -2,8 +2,6 @@
 
 Create temporary login URLs with email verification and role assignment for WordPress.
 
-![Plugin Screenshot](https://github.com/guilamu/quick-entry/blob/main/Screenshot.png)
-
 ## Temporary Login Management
 
 - Generate unique, secure login URLs that expire after a set time
@@ -108,6 +106,10 @@ add_filter( 'qentry_email_body', function( $body, $code ) {
 ```
 
 ## Changelog
+
+### 1.2.2
+- **UI:** Modernized create form with two-column layout, input icons, and improved styling
+- **Bug fix:** Fixed wpdb::prepare() error in Logger::get_total_count() when no filters applied
 
 ### 1.2.1
 - **New Feature:** Activity Log tracks all actions performed by temporary login users (posts, comments, media, users, plugins, themes, settings)
