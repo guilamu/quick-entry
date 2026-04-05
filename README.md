@@ -114,7 +114,7 @@ add_filter( 'qentry_email_body', function( $body, $code ) {
 - **i18n:** Updated translations with all new UI strings
 
 ### 1.2.2
-- **UI:** Modernized create form with two-column layout, input icons, and improved styling
+- **UI:** Modernized create form with two-column layout, input icons and improved styling
 - **Bug fix:** Fixed wpdb::prepare() error in Logger::get_total_count() when no filters applied
 
 ### 1.2.1
