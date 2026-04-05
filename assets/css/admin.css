@@ -251,63 +251,25 @@
     gap: 0.5rem;
 }
 
-/* === Stepper === */
-.qentry-stepper {
-    display: flex;
-    align-items: center;
+/* === Number input === */
+.qentry-number-input {
     border: 1px solid var(--wp-border-input);
     border-radius: var(--radius-md);
     background: #fff;
     height: 38px;
-    overflow: hidden;
-    transition: border-color var(--transition), box-shadow var(--transition);
-}
-.qentry-stepper:focus-within {
-    border-color: var(--wp-border-focus);
-    box-shadow: var(--wp-focus-shadow);
-}
-.qentry-step-btn {
-    width: 34px;
-    height: 100%;
-    border: none;
-    background: var(--wp-surface-2);
-    color: var(--wp-text-muted);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: background var(--transition), color var(--transition);
-    border-radius: 0;
-    cursor: pointer;
-}
-.qentry-step-btn:hover { background: #e9e9e9; color: var(--wp-text); }
-.qentry-step-btn:active { background: #ddd; }
-.qentry-step-divider {
-    width: 1px;
-    height: 20px;
-    background: #ddd;
-    flex-shrink: 0;
-}
-.qentry-stepper input[type="number"] {
-    width: 56px;
-    border: none;
-    border-radius: 0;
-    text-align: center;
+    padding: 0 0.75rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
-    padding: 0;
-    height: 100%;
-    background: transparent;
-    box-shadow: none !important;
-    font-size: 0.8125rem;
+    transition: border-color var(--transition), box-shadow var(--transition);
+    width: 100%;
+    box-sizing: border-box;
 }
-.qentry-stepper input[type="number"]:focus {
-    border-color: transparent;
-    box-shadow: none !important;
+.qentry-number-input:focus {
+    border-color: var(--wp-border-focus);
+    box-shadow: var(--wp-focus-shadow);
+    outline: none;
 }
-.qentry-stepper input[type="number"]::-webkit-inner-spin-button,
-.qentry-stepper input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
-.qentry-stepper input[type="number"] { -moz-appearance: textfield; }
 
 /* === Card footer === */
 .qentry-card-footer {

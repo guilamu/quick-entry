@@ -203,22 +203,8 @@ class QENTRY_Admin {
                                 <!-- Number of Uses -->
                                 <div class="qentry-field">
                                     <label class="qentry-field-label" for="qentry-max-uses"><?php _e('Number of Uses', 'quick-entry'); ?></label>
-                                    <div class="qentry-stepper" role="group" aria-label="<?php esc_attr_e('Number of uses', 'quick-entry'); ?>">
-                                        <button type="button" class="qentry-step-btn" id="qentry-uses-minus" aria-label="<?php esc_attr_e('Decrease', 'quick-entry'); ?>">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                                                <line x1="5" y1="12" x2="19" y2="12"/>
-                                            </svg>
-                                        </button>
-                                        <div class="qentry-step-divider"></div>
-                                        <input type="number" name="qentry_max_uses" id="qentry-max-uses" value="0" min="0">
-                                        <div class="qentry-step-divider"></div>
-                                        <button type="button" class="qentry-step-btn" id="qentry-uses-plus" aria-label="<?php esc_attr_e('Increase', 'quick-entry'); ?>">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                                                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <p class="qentry-field-hint"><?php _e('Set to 0 for unlimited uses.', 'quick-entry'); ?></p>
+                                    <input type="number" name="qentry_max_uses" id="qentry-max-uses" value="0" min="0" class="qentry-number-input">
+                                    <p class="qentry-field-hint"><?php _e('Enter 0 for unlimited uses.', 'quick-entry'); ?></p>
                                 </div>
 
                             </div><!-- /qentry-form-grid -->

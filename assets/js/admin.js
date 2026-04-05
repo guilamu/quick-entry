@@ -110,16 +110,8 @@
             changeYear: true
         });
 
-        // Stepper buttons
-        $(document).on('click', '#qentry-uses-minus', function() {
-            var $input = $('#qentry-max-uses');
-            var v = parseInt($input.val()) || 0;
-            if (v > 0) $input.val(v - 1);
-            updateSummary();
-        });
-        $(document).on('click', '#qentry-uses-plus', function() {
-            var $input = $('#qentry-max-uses');
-            $input.val((parseInt($input.val()) || 0) + 1);
+        // Number of uses change
+        $(document).on('change input', '#qentry-max-uses', function() {
             updateSummary();
         });
 

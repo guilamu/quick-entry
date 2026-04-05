@@ -110,22 +110,6 @@ msgid "Number of Uses"
 msgstr "Nombre d'utilisations"
 
 #: includes/class-admin.php
-msgid "Number of uses"
-msgstr "Nombre d'utilisations"
-
-#: includes/class-admin.php
-msgid "Decrease"
-msgstr "Diminuer"
-
-#: includes/class-admin.php
-msgid "Increase"
-msgstr "Augmenter"
-
-#: includes/class-admin.php
-msgid "Set to 0 for unlimited uses."
-msgstr "Mettre à 0 pour un nombre illimité d'utilisations."
-
-#: includes/class-admin.php
 msgid "Reset"
 msgstr "Réinitialiser"
 
