@@ -107,6 +107,12 @@ add_filter( 'qentry_email_body', function( $body, $code ) {
 
 ## Changelog
 
+### 1.2.3
+- **UI:** Redesigned admin create form, logins list, and activity log with card-style headers
+- **UI:** Added stepper widget for Number of Uses, SVG icons for all form fields
+- **UI:** Dynamic footer summary describing the link being created
+- **i18n:** Updated translations with all new UI strings
+
 ### 1.2.2
 - **UI:** Modernized create form with two-column layout, input icons, and improved styling
 - **Bug fix:** Fixed wpdb::prepare() error in Logger::get_total_count() when no filters applied

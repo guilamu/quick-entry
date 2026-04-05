@@ -110,6 +110,99 @@
             changeYear: true
         });
 
+        // Stepper buttons
+        $(document).on('click', '#qentry-uses-minus', function() {
+            var $input = $('#qentry-max-uses');
+            var v = parseInt($input.val()) || 0;
+            if (v > 0) $input.val(v - 1);
+            updateSummary();
+        });
+        $(document).on('click', '#qentry-uses-plus', function() {
+            var $input = $('#qentry-max-uses');
+            $input.val((parseInt($input.val()) || 0) + 1);
+            updateSummary();
+        });
+
+        // Reset button
+        $(document).on('click', '#qentry-reset-btn', function() {
+            var $form = $('#qentry-create-form');
+            $form[0].reset();
+            $('#qentry-max-uses').val(0);
+            $('#qentry-expiration-time').val('23:59');
+            updateSummary();
+        });
+
+        // Dynamic summary text
+        function updateSummary() {
+            var role = $('#qentry-role option:selected');
+            var roleText = role.val() ? role.text() : '';
+            var dateVal = $('#qentry-expiration-date').val();
+            var timeVal = $('#qentry-expiration-time').val();
+            var maxUses = parseInt($('#qentry-max-uses').val()) || 0;
+
+            if (!roleText && !dateVal) {
+                $('#qentry-summary-text').text('Fill out the form to see a summary of the link you are about to create.');
+                return;
+            }
+
+            var parts = [];
+            parts.push('Create a temporary');
+
+            if (roleText) {
+                parts.push(roleText);
+            }
+
+            parts.push('login');
+
+            if (dateVal) {
+                // Parse mm/dd/yy or mm/dd/yyyy
+                var dateParts = dateVal.split('/');
+                if (dateParts.length === 3) {
+                    var month = parseInt(dateParts[0], 10);
+                    var day = parseInt(dateParts[1], 10);
+                    var year = parseInt(dateParts[2], 10);
+                    if (year < 100) year += 2000;
+
+                    var months = ['January', 'February', 'March', 'April', 'May', 'June',
+                                  'July', 'August', 'September', 'October', 'November', 'December'];
+                    var ordinal = function(n) {
+                        var s = ['th','st','nd','rd'];
+                        var v = n % 100;
+                        return n + (s[(v-20)%10] || s[v] || s[0]);
+                    };
+
+                    var dateStr = months[month - 1] + ' ' + ordinal(day) + ', ' + year;
+
+                    if (timeVal) {
+                        var timeParts = timeVal.split(':');
+                        var hours = parseInt(timeParts[0], 10);
+                        var minutes = timeParts[1] || '00';
+                        var ampm = hours >= 12 ? 'PM' : 'AM';
+                        var h12 = hours % 12 || 12;
+                        dateStr += ' at ' + h12 + ':' + minutes + ' ' + ampm;
+                    }
+
+                    parts.push('which will expire ' + dateStr);
+                }
+            }
+
+            if (maxUses === 1) {
+                parts.push('or after a single use.');
+            } else if (maxUses > 1) {
+                parts.push('or after ' + maxUses + ' uses.');
+            } else {
+                // unlimited
+                var lastIdx = parts.length - 1;
+                parts[lastIdx] = parts[lastIdx] + '.';
+            }
+
+            $('#qentry-summary-text').text(parts.join(' '));
+        }
+
+        // Bind summary updates to form fields
+        $(document).on('change', '#qentry-role, #qentry-expiration-date, #qentry-expiration-time', updateSummary);
+        $(document).on('input', '#qentry-max-uses', updateSummary);
+
         $(document).on('submit', '#qentry-create-form', function(e) {
             e.preventDefault();
 
@@ -123,7 +216,12 @@
             var expiryTime = $('#qentry-expiration-time').val();
             var maxUses = parseInt($('#qentry-max-uses').val()) || 0;
 
-            if (!role || !email || !expiryDate || !expiryTime) {
+            // Validate required fields
+            if (!role) {
+                $('#qentry-role').focus();
+                return;
+            }
+            if (!email) {
                 alert('Please fill in all required fields.');
                 return;
             }
@@ -151,6 +249,7 @@
                         $form[0].reset();
                         $('#qentry-expiration-time').val('23:59');
                         $('#qentry-max-uses').val(0);
+                        updateSummary();
                     } else {
                         alert(response.data.message || qentry_data.i18n.error);
                     }

@@ -45,21 +45,375 @@
     font-size: 18px;
 }
 
-/* Form Container Styles */
+/* === WP Admin card tokens === */
 .qentry-create-section {
     margin-bottom: 0;
+    --wp-bg:              #f0f0f1;
+    --wp-surface:         #ffffff;
+    --wp-surface-2:       #f9f9f9;
+    --wp-border:          #c3c4c7;
+    --wp-border-input:    #8c8f94;
+    --wp-border-focus:    #2271b1;
+    --wp-text:            #1d2327;
+    --wp-text-muted:      #50575e;
+    --wp-text-faint:      #8c8f94;
+    --wp-blue:            #2271b1;
+    --wp-blue-hover:      #135e96;
+    --wp-blue-active:     #0a4b78;
+    --wp-blue-light:      #e8f0f9;
+    --wp-blue-mid:        #c9d9f0;
+    --wp-red:             #b32d2e;
+    --wp-green:           #00a32a;
+    --wp-green-bg:        #edfaef;
+    --wp-focus-shadow:    0 0 0 1px #2271b1;
+    --wp-shadow-sm:       0 1px 2px rgba(0,0,0,0.07);
+    --wp-shadow-md:       0 2px 6px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+    --radius-sm:          3px;
+    --radius-md:          4px;
+    --radius-lg:          6px;
+    --transition:         140ms ease;
 }
 
+/* === Card container === */
 .qentry-create-form {
-    background: #ffffff;
+    background: var(--wp-surface);
     padding: 0;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--wp-shadow-md);
+    border: 1px solid var(--wp-border);
     overflow: hidden;
 }
 
-/* Form Row - Two-column layout */
+/* === Card header === */
+.qentry-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.125rem 1.5rem;
+    background: var(--wp-surface);
+    border-bottom: 1px solid var(--wp-border);
+}
+.qentry-card-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+}
+.qentry-card-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--wp-text);
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+}
+.qentry-card-subtitle {
+    font-size: 0.75rem;
+    color: var(--wp-text-muted);
+    margin-top: 0.1rem;
+}
+.qentry-badge {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.2rem 0.55rem;
+    border-radius: 2px;
+    background: var(--wp-blue-light);
+    color: var(--wp-blue);
+    border: 1px solid var(--wp-blue-mid);
+}
+
+/* === Card body === */
+.qentry-card-body {
+    padding: 1.5rem;
+}
+
+/* === Form grid (2-col) === */
+.qentry-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem 1.5rem;
+}
+
+/* === Field === */
+.qentry-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+.qentry-field-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--wp-text);
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    line-height: 1.4;
+}
+.qentry-required-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--wp-blue);
+    display: inline-block;
+    flex-shrink: 0;
+    margin-bottom: 1px;
+}
+.qentry-field-hint {
+    font-size: 0.75rem;
+    color: var(--wp-text-faint);
+    line-height: 1.5;
+    margin: 0.2rem 0 0;
+}
+
+/* === Input base === */
+.qentry-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.qentry-input-icon {
+    position: absolute;
+    left: 0.625rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--wp-text-faint);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color var(--transition);
+    z-index: 1;
+    width: 14px;
+    height: 14px;
+    line-height: 0;
+}
+.qentry-input-wrap:focus-within .qentry-input-icon {
+    color: var(--wp-blue);
+}
+
+.qentry-create-section input[type="text"],
+.qentry-create-section input[type="email"],
+.qentry-create-section input[type="date"],
+.qentry-create-section input[type="time"],
+.qentry-create-section input[type="number"],
+.qentry-create-section select {
+    width: 100%;
+    max-width: none;
+    font-family: inherit;
+    font-size: 0.875rem;
+    color: var(--wp-text);
+    background: #fff;
+    border: 1px solid var(--wp-border-input);
+    border-radius: var(--radius-md);
+    height: 38px;
+    line-height: 1.4;
+    transition: border-color var(--transition), box-shadow var(--transition);
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+}
+.qentry-create-section input::placeholder { color: #babbbd; }
+.qentry-create-section input:focus,
+.qentry-create-section select:focus {
+    border-color: var(--wp-border-focus);
+    box-shadow: var(--wp-focus-shadow);
+}
+.qentry-has-icon input,
+.qentry-has-icon select {
+    padding-left: 2.1rem;
+}
+
+/* Select arrow */
+.qentry-select-wrap {
+    position: relative;
+}
+.qentry-select-wrap::after {
+    content: '';
+    position: absolute;
+    right: 0.7rem;
+    top: 50%;
+    transform: translateY(-50%);
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid var(--wp-text-muted);
+    pointer-events: none;
+}
+.qentry-select-wrap select {
+    padding-right: 2rem;
+    cursor: pointer;
+}
+
+/* === Datetime row === */
+.qentry-datetime-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+
+/* === Stepper === */
+.qentry-stepper {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--wp-border-input);
+    border-radius: var(--radius-md);
+    background: #fff;
+    height: 38px;
+    overflow: hidden;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+.qentry-stepper:focus-within {
+    border-color: var(--wp-border-focus);
+    box-shadow: var(--wp-focus-shadow);
+}
+.qentry-step-btn {
+    width: 34px;
+    height: 100%;
+    border: none;
+    background: var(--wp-surface-2);
+    color: var(--wp-text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background var(--transition), color var(--transition);
+    border-radius: 0;
+    cursor: pointer;
+}
+.qentry-step-btn:hover { background: #e9e9e9; color: var(--wp-text); }
+.qentry-step-btn:active { background: #ddd; }
+.qentry-step-divider {
+    width: 1px;
+    height: 20px;
+    background: #ddd;
+    flex-shrink: 0;
+}
+.qentry-stepper input[type="number"] {
+    width: 56px;
+    border: none;
+    border-radius: 0;
+    text-align: center;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    padding: 0;
+    height: 100%;
+    background: transparent;
+    box-shadow: none !important;
+    font-size: 0.8125rem;
+}
+.qentry-stepper input[type="number"]:focus {
+    border-color: transparent;
+    box-shadow: none !important;
+}
+.qentry-stepper input[type="number"]::-webkit-inner-spin-button,
+.qentry-stepper input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+.qentry-stepper input[type="number"] { -moz-appearance: textfield; }
+
+/* === Card footer === */
+.qentry-card-footer {
+    padding: 1.125rem 1.5rem 1.375rem;
+    border-top: 1px solid var(--wp-border);
+    background: var(--wp-surface-2);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+}
+.qentry-footer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* WP-style primary button */
+.qentry-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0 1rem;
+    height: 38px;
+    background: var(--wp-blue);
+    color: #fff;
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    border: 1px solid var(--wp-blue-hover);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background var(--transition), border-color var(--transition), box-shadow var(--transition);
+    white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+    line-height: 1;
+}
+.qentry-btn-primary:hover {
+    background: var(--wp-blue-hover);
+    border-color: var(--wp-blue-active);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    color: #fff;
+}
+.qentry-btn-primary:active {
+    background: var(--wp-blue-active);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+.qentry-btn-primary:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--wp-blue);
+}
+
+/* WP-style secondary button */
+.qentry-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0 0.875rem;
+    height: 36px;
+    background: #fff;
+    color: var(--wp-text);
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    border: 1px solid var(--wp-border-input);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background var(--transition), border-color var(--transition);
+    white-space: nowrap;
+}
+.qentry-btn-secondary:hover { background: var(--wp-surface-2); border-color: #999; }
+
+/* Footer summary note */
+.qentry-footer-note {
+    font-size: 0.75rem;
+    color: var(--wp-text-faint);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.3rem;
+    line-height: 1.5;
+}
+.qentry-footer-note svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+.qentry-footer-note strong {
+    color: var(--wp-text-muted);
+    font-weight: 600;
+}
+
+/* === Inline field error === */
+.qentry-field-error {
+    font-size: 0.75rem;
+    color: var(--wp-red);
+    margin-top: 0.2rem;
+    display: none;
+}
+.qentry-field.has-error input,
+.qentry-field.has-error select { border-color: var(--wp-red); box-shadow: 0 0 0 1px var(--wp-red); }
+.qentry-field.has-error .qentry-field-error { display: block; }
+
+/* Legacy aliases kept for non-create sections */
 .qentry-form-row {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -67,19 +421,11 @@
     padding: 32px;
     margin-bottom: 0;
 }
-
-.qentry-form-row:last-of-type {
-    border-bottom: none;
-}
-
-/* Individual Form Field */
 .qentry-form-field {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
-
-/* Form Labels */
 .qentry-form-label {
     display: block;
     font-size: 14px;
@@ -87,40 +433,12 @@
     color: #1a1a1a;
     margin: 0;
 }
-
-.qentry-required {
-    color: #dc2626;
-    margin-left: 4px;
-    font-weight: 700;
+.qentry-form-help {
+    margin: 0;
+    font-size: 13px;
+    color: #64748b;
+    line-height: 1.5;
 }
-
-/* Input Wrapper with Icons */
-.qentry-input-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.qentry-input-icon {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 18px;
-    color: #6b7280;
-    pointer-events: none;
-    width: 18px;
-    height: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.qentry-input-icon::before {
-    font-size: 18px;
-}
-
-/* Form Inputs */
 .qentry-form-input {
     padding: 10px 14px;
     font-size: 14px;
@@ -133,22 +451,11 @@
     font-family: inherit;
     width: 100%;
 }
-
-.qentry-input-wrapper .qentry-form-input {
-    padding-left: 40px;
-}
-
 .qentry-form-input:focus {
     outline: none;
     border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
-
-.qentry-form-input:hover:not(:focus) {
-    border-color: #9ca3af;
-}
-
-/* Select Styling */
 select.qentry-form-input {
     cursor: pointer;
     appearance: none;
@@ -159,42 +466,7 @@ select.qentry-form-input {
     padding-right: 36px;
 }
 
-.qentry-select-wrapper select.qentry-form-input {
-    padding-left: 40px;
-    padding-right: 36px;
-}
-
-/* DateTime Input Group */
-.qentry-datetime-inputs {
-    display: flex;
-    gap: 12px;
-    flex-wrap: nowrap;
-    align-items: center;
-}
-
-.qentry-date-picker {
-    flex: 1;
-    min-width: 250px;
-}
-
-.qentry-time-wrapper {
-    width: 140px;
-    flex-shrink: 0;
-}
-
-.qentry-time-input {
-    width: 100%;
-}
-
-/* Help Text */
-.qentry-form-help {
-    margin: 0;
-    font-size: 13px;
-    color: #64748b;
-    line-height: 1.5;
-}
-
-/* Form Actions */
+/* Form Actions (legacy for non-card sections) */
 .qentry-form-actions {
     display: flex;
     align-items: center;
@@ -225,18 +497,6 @@ select.qentry-form-input {
     font-size: 18px;
     width: 18px;
     height: 18px;
-}
-
-.qentry-btn-primary {
-    background: #3b82f6;
-    color: #ffffff;
-    border-color: #3b82f6;
-}
-
-.qentry-btn-primary:hover {
-    background: #2563eb;
-    border-color: #2563eb;
-    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
 }
 
 .qentry-form-actions .spinner {
@@ -411,21 +671,30 @@ select.qentry-form-input {
 
 /* Logins List Styles */
 .qentry-logins-list {
-    background: #fff;
-    padding: 24px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    border: 1px solid #e5e5e5;
+    background: var(--wp-surface, #fff);
+    padding: 0;
+    border-radius: var(--radius-lg, 6px);
+    box-shadow: var(--wp-shadow-md, 0 2px 6px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06));
+    border: 1px solid var(--wp-border, #c3c4c7);
+    overflow: hidden;
+}
+
+.qentry-logins-list-body {
+    padding: 1.5rem;
 }
 
 .qentry-logins-section {
     margin-top: 40px;
-}
-
-.qentry-logins-section h2 {
-    margin-bottom: 20px;
-    font-size: 24px;
-    font-weight: 600;
+    --wp-surface:         #ffffff;
+    --wp-surface-2:       #f9f9f9;
+    --wp-border:          #c3c4c7;
+    --wp-text:            #1d2327;
+    --wp-text-muted:      #50575e;
+    --wp-blue:            #2271b1;
+    --wp-blue-light:      #e8f0f9;
+    --wp-blue-mid:        #c9d9f0;
+    --wp-shadow-md:       0 2px 6px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+    --radius-lg:          6px;
 }
 
 .qentry-create-section {
@@ -435,20 +704,29 @@ select.qentry-form-input {
 /* Activity Log Section */
 .qentry-activity-section {
     margin-top: 40px;
-}
-
-.qentry-activity-section h2 {
-    margin-bottom: 20px;
-    font-size: 24px;
-    font-weight: 600;
+    --wp-surface:         #ffffff;
+    --wp-surface-2:       #f9f9f9;
+    --wp-border:          #c3c4c7;
+    --wp-text:            #1d2327;
+    --wp-text-muted:      #50575e;
+    --wp-blue:            #2271b1;
+    --wp-blue-light:      #e8f0f9;
+    --wp-blue-mid:        #c9d9f0;
+    --wp-shadow-md:       0 2px 6px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+    --radius-lg:          6px;
 }
 
 .qentry-activity-list {
-    background: #fff;
-    padding: 24px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    border: 1px solid #e5e5e5;
+    background: var(--wp-surface, #fff);
+    padding: 0;
+    border-radius: var(--radius-lg, 6px);
+    box-shadow: var(--wp-shadow-md, 0 2px 6px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06));
+    border: 1px solid var(--wp-border, #c3c4c7);
+    overflow: hidden;
+}
+
+.qentry-activity-list-body {
+    padding: 1.5rem;
 }
 
 .qentry-log-filters {
@@ -685,6 +963,9 @@ select.qentry-form-input {
         grid-template-columns: 1fr;
         gap: 24px;
     }
+    .qentry-form-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 782px) {
@@ -713,6 +994,26 @@ select.qentry-form-input {
     .qentry-form-row {
         padding: 24px;
         gap: 24px;
+    }
+
+    .qentry-card-body {
+        padding: 1rem;
+    }
+    .qentry-card-header {
+        padding: 0.875rem 1rem;
+    }
+    .qentry-card-footer {
+        padding: 0.875rem 1rem;
+    }
+    .qentry-datetime-row {
+        grid-template-columns: 1fr 1fr;
+    }
+    .qentry-footer-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .qentry-btn-primary {
+        justify-content: center;
     }
 
     .qentry-form-actions {

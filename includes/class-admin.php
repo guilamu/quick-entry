@@ -106,85 +106,172 @@ class QENTRY_Admin {
         $roles = self::get_available_roles();
         ?>
         <div class="wrap qentry-admin-wrap">
-            <h1 class="wp-heading-inline"><?php _e('QuickEntry', 'quick-entry'); ?></h1>
+            <h1><?php _e('QuickEntry', 'quick-entry'); ?></h1>
             <hr class="wp-header-end">
 
             <!-- Create Login Form -->
             <div class="qentry-create-section">
                 <div class="qentry-create-form">
-                    <form id="qentry-create-form" method="post">
-                        <div class="qentry-form-row">
-                            <div class="qentry-form-field">
-                                <label for="qentry-role" class="qentry-form-label">
-                                    <?php _e('User Role', 'quick-entry'); ?>
-                                    <span class="qentry-required">*</span>
-                                </label>
-                                <div class="qentry-input-wrapper qentry-select-wrapper">
-                                    <span class="qentry-input-icon dashicons dashicons-admin-users"></span>
-                                    <select name="qentry_role" id="qentry-role" class="qentry-form-input" required>
-                                        <?php foreach ($roles as $role_key => $role_name) : ?>
-                                            <option value="<?php echo esc_attr($role_key); ?>"><?php echo esc_html($role_name); ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                                <p class="qentry-form-help"><?php _e('The role that will be assigned to the temporary user.', 'quick-entry'); ?></p>
-                            </div>
 
-                            <div class="qentry-form-field">
-                                <label for="qentry-email" class="qentry-form-label">
-                                    <?php _e('Email Address', 'quick-entry'); ?>
-                                    <span class="qentry-required">*</span>
-                                </label>
-                                <div class="qentry-input-wrapper">
-                                    <span class="qentry-input-icon dashicons dashicons-email"></span>
-                                    <input type="email" name="qentry_email" id="qentry-email" class="qentry-form-input" required placeholder="user@example.com">
-                                </div>
-                                <p class="qentry-form-help"><?php _e('The verification code will be sent to this email address.', 'quick-entry'); ?></p>
+                    <!-- Card Header -->
+                    <div class="qentry-card-header">
+                        <div class="qentry-card-header-left">
+                            <div>
+                                <div class="qentry-card-title"><?php _e('Create Temporary Login', 'quick-entry'); ?></div>
+                                <div class="qentry-card-subtitle"><?php _e('Generate a temporary login link', 'quick-entry'); ?></div>
                             </div>
                         </div>
+                        <span class="qentry-badge"><?php _e('Temporary Access', 'quick-entry'); ?></span>
+                    </div>
 
-                        <div class="qentry-form-row">
-                            <div class="qentry-form-field">
-                                <label class="qentry-form-label">
-                                    <?php _e('Expiration Date & Time', 'quick-entry'); ?>
-                                    <span class="qentry-required">*</span>
-                                </label>
-                                <div class="qentry-datetime-inputs">
-                                    <div class="qentry-input-wrapper">
-                                        <span class="qentry-input-icon dashicons dashicons-calendar"></span>
-                                        <input type="text" name="qentry_expiration_date" id="qentry-expiration-date" class="qentry-form-input qentry-date-picker" required placeholder="mm/dd/yyyy">
+                    <!-- Card Body -->
+                    <div class="qentry-card-body">
+                        <form id="qentry-create-form" method="post">
+                            <div class="qentry-form-grid">
+
+                                <!-- User Role -->
+                                <div class="qentry-field" id="qentry-field-role">
+                                    <label class="qentry-field-label" for="qentry-role">
+                                        <span class="qentry-required-dot" aria-hidden="true"></span>
+                                        <?php _e('User Role', 'quick-entry'); ?>
+                                    </label>
+                                    <div class="qentry-input-wrap qentry-has-icon qentry-select-wrap">
+                                        <span class="qentry-input-icon">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <circle cx="12" cy="8" r="4"/>
+                                                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                                            </svg>
+                                        </span>
+                                        <select name="qentry_role" id="qentry-role" required>
+                                            <option value="" disabled><?php _e('Select a role…', 'quick-entry'); ?></option>
+                                            <?php foreach ($roles as $role_key => $role_name) : ?>
+                                                <option value="<?php echo esc_attr($role_key); ?>"><?php echo esc_html($role_name); ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
                                     </div>
-                                    <div class="qentry-input-wrapper qentry-time-wrapper">
-                                        <span class="qentry-input-icon dashicons dashicons-clock"></span>
-                                        <input type="time" name="qentry_expiration_time" id="qentry-expiration-time" class="qentry-form-input qentry-time-input" value="23:59" required>
-                                    </div>
+                                    <p class="qentry-field-hint"><?php _e('Role assigned to the temporary user.', 'quick-entry'); ?></p>
                                 </div>
-                                <p class="qentry-form-help"><?php _e('The URL will expire after this date and time.', 'quick-entry'); ?></p>
-                            </div>
 
-                            <div class="qentry-form-field">
-                                <label for="qentry-max-uses" class="qentry-form-label">
-                                    <?php _e('Number of Uses', 'quick-entry'); ?>
-                                </label>
-                                <input type="number" name="qentry_max_uses" id="qentry-max-uses" class="qentry-form-input" value="0" min="0">
-                                <p class="qentry-form-help"><?php _e('Enter 0 for unlimited uses.', 'quick-entry'); ?></p>
-                            </div>
-                        </div>
+                                <!-- Email Address -->
+                                <div class="qentry-field" id="qentry-field-email">
+                                    <label class="qentry-field-label" for="qentry-email">
+                                        <span class="qentry-required-dot" aria-hidden="true"></span>
+                                        <?php _e('Email Address', 'quick-entry'); ?>
+                                    </label>
+                                    <div class="qentry-input-wrap qentry-has-icon">
+                                        <span class="qentry-input-icon">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect x="2" y="4" width="20" height="16" rx="2"/>
+                                                <path d="m2 7 10 7 10-7"/>
+                                            </svg>
+                                        </span>
+                                        <input type="email" name="qentry_email" id="qentry-email" required placeholder="user@example.com" autocomplete="email">
+                                    </div>
+                                    <p class="qentry-field-hint"><?php _e('Verification code will be sent to this address.', 'quick-entry'); ?></p>
+                                </div>
 
-                        <div class="qentry-form-actions">
-                            <button type="submit" class="qentry-btn qentry-btn-primary" id="qentry-create-btn">
-                                <span class="dashicons dashicons-plus-alt2"></span>
-                                <span><?php _e('Create Temporary Login', 'quick-entry'); ?></span>
+                                <!-- Expiration Date & Time -->
+                                <div class="qentry-field" id="qentry-field-expiry">
+                                    <label class="qentry-field-label" for="qentry-expiration-date">
+                                        <span class="qentry-required-dot" aria-hidden="true"></span>
+                                        <?php _e('Expiration Date & Time', 'quick-entry'); ?>
+                                    </label>
+                                    <div class="qentry-datetime-row">
+                                        <div class="qentry-input-wrap qentry-has-icon">
+                                            <span class="qentry-input-icon">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <rect x="3" y="4" width="18" height="18" rx="2"/>
+                                                    <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                                                    <line x1="3" y1="10" x2="21" y2="10"/>
+                                                </svg>
+                                            </span>
+                                            <input type="text" name="qentry_expiration_date" id="qentry-expiration-date" class="qentry-date-picker" required placeholder="mm/dd/yyyy">
+                                        </div>
+                                        <div class="qentry-input-wrap qentry-has-icon">
+                                            <span class="qentry-input-icon">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="12" cy="12" r="10"/>
+                                                    <polyline points="12 6 12 12 16 14"/>
+                                                </svg>
+                                            </span>
+                                            <input type="time" name="qentry_expiration_time" id="qentry-expiration-time" value="23:59" required>
+                                        </div>
+                                    </div>
+                                    <p class="qentry-field-hint"><?php _e('The URL will expire after this date and time.', 'quick-entry'); ?></p>
+                                </div>
+
+                                <!-- Number of Uses -->
+                                <div class="qentry-field">
+                                    <label class="qentry-field-label" for="qentry-max-uses"><?php _e('Number of Uses', 'quick-entry'); ?></label>
+                                    <div class="qentry-stepper" role="group" aria-label="<?php esc_attr_e('Number of uses', 'quick-entry'); ?>">
+                                        <button type="button" class="qentry-step-btn" id="qentry-uses-minus" aria-label="<?php esc_attr_e('Decrease', 'quick-entry'); ?>">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                                <line x1="5" y1="12" x2="19" y2="12"/>
+                                            </svg>
+                                        </button>
+                                        <div class="qentry-step-divider"></div>
+                                        <input type="number" name="qentry_max_uses" id="qentry-max-uses" value="0" min="0">
+                                        <div class="qentry-step-divider"></div>
+                                        <button type="button" class="qentry-step-btn" id="qentry-uses-plus" aria-label="<?php esc_attr_e('Increase', 'quick-entry'); ?>">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <p class="qentry-field-hint"><?php _e('Set to 0 for unlimited uses.', 'quick-entry'); ?></p>
+                                </div>
+
+                            </div><!-- /qentry-form-grid -->
+                        </form>
+                    </div>
+
+                    <!-- Card Footer -->
+                    <div class="qentry-card-footer">
+                        <div class="qentry-footer-row">
+                            <button type="submit" class="qentry-btn-primary" id="qentry-create-btn" form="qentry-create-form">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="8" x2="12" y2="16"/>
+                                    <line x1="8" y1="12" x2="16" y2="12"/>
+                                </svg>
+                                <?php _e('Create Temporary Login', 'quick-entry'); ?>
+                            </button>
+                            <button type="button" class="qentry-btn-secondary" id="qentry-reset-btn">
+                                <svg width="13" height="13" viewBox="0 0 21 21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <g transform="matrix(0 1 1 0 2.5 2.5)">
+                                        <path d="m3.98652376 1.07807068c-2.38377179 1.38514556-3.98652376 3.96636605-3.98652376 6.92192932 0 4.418278 3.581722 8 8 8s8-3.581722 8-8-3.581722-8-8-8"/>
+                                        <path d="m4 1v4h-4" transform="matrix(1 0 0 -1 0 6)"/>
+                                    </g>
+                                </svg>
+                                <?php _e('Reset', 'quick-entry'); ?>
                             </button>
                         </div>
-                    </form>
+                        <p class="qentry-footer-note" id="qentry-summary">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                            <span id="qentry-summary-text"><?php _e('Fill out the form to see a summary of the link you are about to create.', 'quick-entry'); ?></span>
+                        </p>
+                    </div>
+                    <span id="qentry-loading" class="spinner" style="display:none;"></span>
+
                 </div>
             </div>
 
             <!-- All Logins Section -->
             <div class="qentry-logins-section">
-                <h2><?php _e('All Logins', 'quick-entry'); ?></h2>
                 <div class="qentry-logins-list">
+                    <div class="qentry-card-header">
+                        <div class="qentry-card-header-left">
+                            <div>
+                                <div class="qentry-card-title"><?php _e('All Logins', 'quick-entry'); ?></div>
+                                <div class="qentry-card-subtitle"><?php _e('Manage all temporary login links', 'quick-entry'); ?></div>
+                            </div>
+                        </div>
+                        <span class="qentry-badge"><?php printf(__('%d total', 'quick-entry'), $total); ?></span>
+                    </div>
+                    <div class="qentry-logins-list-body">
                     <table class="wp-list-table widefat fixed striped qentry-logins-table" style="table-layout:auto;">
                         <thead>
                             <tr>
@@ -269,13 +356,23 @@ class QENTRY_Admin {
                         echo '</div>';
                     }
                     ?>
+                    </div>
                 </div>
             </div>
 
             <!-- Activity Log Section -->
             <div class="qentry-activity-section <?php echo $logging_enabled ? 'qentry-logging-enabled' : ''; ?>">
-                <h2><?php _e('Activity Log', 'quick-entry'); ?></h2>
                 <div class="qentry-activity-list">
+                    <div class="qentry-card-header">
+                        <div class="qentry-card-header-left">
+                            <div>
+                                <div class="qentry-card-title"><?php _e('Activity Log', 'quick-entry'); ?></div>
+                                <div class="qentry-card-subtitle"><?php _e('Track actions performed by temporary users', 'quick-entry'); ?></div>
+                            </div>
+                        </div>
+                        <span class="qentry-badge"><?php _e('Audit Trail', 'quick-entry'); ?></span>
+                    </div>
+                    <div class="qentry-activity-list-body">
                     <form method="get" class="qentry-log-filters">
                         <input type="hidden" name="page" value="quick-entry">
                         <div class="qentry-log-filters-left">
@@ -376,6 +473,7 @@ class QENTRY_Admin {
                         <p><?php _e('Activity logging is currently disabled. Enable it using the toggle above to start tracking user actions.', 'quick-entry'); ?></p>
                     </div>
                     <?php endif; ?>
+                    </div><!-- /qentry-activity-list-body -->
                 </div>
             </div>
 

@@ -2,10 +2,10 @@
 # This file is distributed under the GNU Affero General Public License v3.0 (AGPL-3.0).
 msgid ""
 msgstr ""
-"Project-Id-Version: QuickEntry 1.2.2\n"
+"Project-Id-Version: QuickEntry 1.2.3\n"
 "Report-Msgid-Bugs-To: https://github.com/guilamu/quick-entry/issues\n"
-"POT-Creation-Date: 2026-04-02 22:50:00+00:00\n"
-"PO-Revision-Date: 2026-04-05 12:13+0200\n"
+"POT-Creation-Date: 2026-04-05 00:00+0000\n"
+"PO-Revision-Date: 2026-04-05 14:12+0200\n"
 "Last-Translator: guilamu\n"
 "Language-Team: French (France)\n"
 "Language: fr_FR\n"
@@ -14,7 +14,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.8\n"
-"X-Poedit-KeywordsList: __;_e;_x:1,2c;_ex:1,2c;_n:1,2;_nx:1,2,4c;_n_noop:1,2;_nx_noop:1,2,3c;esc_attr__;esc_html__;esc_attr_e;esc_html_e;esc_attr_x:1,2c;esc_html_x:1,2c\n"
+"X-Poedit-KeywordsList: "
+"__;_e;_x:1,2c;_ex:1,2c;_n:1,2;_nx:1,2,4c;_n_noop:1,2;_nx_noop:1,2,3c;esc_attr__;esc_html__;esc_attr_e;esc_html_e;esc_attr_x:1,2c;esc_html_x:1,2c\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Textdomain-Support: yes\n"
@@ -45,32 +46,108 @@ msgid "🐛 Report a Bug (install Bug Reporter)"
 msgstr "🐛 Signaler un bug (installer Bug Reporter)"
 
 #: includes/class-admin.php
-msgid "QuickEntry - Temporary Logins"
-msgstr "QuickEntry - Connexions temporaires"
+msgid "Temporary login URL created successfully!"
+msgstr "URL de connexion temporaire créée avec succès !"
 
 #: includes/class-admin.php
-msgid "Temporary Logins"
-msgstr "Connexions temporaires"
+msgid "An error occurred. Please try again."
+msgstr "Une erreur est survenue. Veuillez réessayer."
 
 #: includes/class-admin.php
-msgid "Create New"
-msgstr "Créer nouveau"
+msgid "Are you sure you want to delete this temporary login?"
+msgstr "Êtes-vous sûr de vouloir supprimer cette connexion temporaire ?"
+
+#: includes/class-admin.php
+msgid "Temporary login deleted."
+msgstr "Connexion temporaire supprimée."
+
+#: includes/class-admin.php
+msgid "URL copied to clipboard!"
+msgstr "URL copiée dans le presse-papiers !"
 
 #: includes/class-admin.php
 msgid "Create Temporary Login"
 msgstr "Créer une connexion temporaire"
 
 #: includes/class-admin.php
-msgid "Settings"
-msgstr "Paramètres"
+msgid "Generate a temporary login link"
+msgstr "Générer un lien de connexion temporaire"
 
 #: includes/class-admin.php
-msgid "QuickEntry Settings"
-msgstr "Paramètres QuickEntry"
+msgid "Temporary Access"
+msgstr "Accès temporaire"
 
 #: includes/class-admin.php
-msgid "Token"
-msgstr "Jeton"
+msgid "User Role"
+msgstr "Rôle utilisateur"
+
+#: includes/class-admin.php
+msgid "Select a role…"
+msgstr "Sélectionner un rôle…"
+
+#: includes/class-admin.php
+msgid "Role assigned to the temporary user."
+msgstr "Rôle attribué à l'utilisateur temporaire."
+
+#: includes/class-admin.php
+msgid "Email Address"
+msgstr "Adresse e-mail"
+
+#: includes/class-admin.php
+msgid "Verification code will be sent to this address."
+msgstr "Le code de vérification sera envoyé à cette adresse."
+
+#: includes/class-admin.php
+msgid "Expiration Date & Time"
+msgstr "Date et heure d'expiration"
+
+#: includes/class-admin.php
+msgid "The URL will expire after this date and time."
+msgstr "L'URL expirera après cette date et heure."
+
+#: includes/class-admin.php
+msgid "Number of Uses"
+msgstr "Nombre d'utilisations"
+
+#: includes/class-admin.php
+msgid "Number of uses"
+msgstr "Nombre d'utilisations"
+
+#: includes/class-admin.php
+msgid "Decrease"
+msgstr "Diminuer"
+
+#: includes/class-admin.php
+msgid "Increase"
+msgstr "Augmenter"
+
+#: includes/class-admin.php
+msgid "Set to 0 for unlimited uses."
+msgstr "Mettre à 0 pour un nombre illimité d'utilisations."
+
+#: includes/class-admin.php
+msgid "Reset"
+msgstr "Réinitialiser"
+
+#: includes/class-admin.php
+msgid "Fill out the form to see a summary of the link you are about to create."
+msgstr "Remplissez le formulaire pour voir un résumé du lien que vous allez créer."
+
+#: includes/class-admin.php
+msgid "All Logins"
+msgstr "Toutes les connexions"
+
+#: includes/class-admin.php
+msgid "Manage all temporary login links"
+msgstr "Gérer tous les liens de connexion temporaires"
+
+#: includes/class-admin.php
+msgid "%d total"
+msgstr "%d au total"
+
+#: includes/class-admin.php
+msgid "ID"
+msgstr "ID"
 
 #: includes/class-admin.php
 msgid "Email"
@@ -81,6 +158,14 @@ msgid "Role"
 msgstr "Rôle"
 
 #: includes/class-admin.php
+msgid "Usage"
+msgstr "Utilisation"
+
+#: includes/class-admin.php
+msgid "Created"
+msgstr "Créé le"
+
+#: includes/class-admin.php
 msgid "Expires"
 msgstr "Expire le"
 
@@ -89,264 +174,316 @@ msgid "Status"
 msgstr "Statut"
 
 #: includes/class-admin.php
-msgid "Created"
-msgstr "Créé le"
-
-#: includes/class-admin.php
 msgid "Actions"
 msgstr "Actions"
-
-#: includes/class-admin.php
-msgid "Active"
-msgstr "Actif"
-
-#: includes/class-admin.php
-msgid "Expired"
-msgstr "Expiré"
-
-#: includes/class-admin.php
-msgid "Used"
-msgstr "Utilisé"
-
-#: includes/class-admin.php
-msgid "Revoked"
-msgstr "Révoqué"
-
-#: includes/class-admin.php
-msgid "All"
-msgstr "Tous"
-
-#: includes/class-admin.php
-msgid "Copy URL"
-msgstr "Copier l'URL"
-
-#: includes/class-admin.php
-msgid "Revoke"
-msgstr "Révoquer"
-
-#: includes/class-admin.php
-msgid "Delete"
-msgstr "Supprimer"
 
 #: includes/class-admin.php
 msgid "No temporary logins found."
 msgstr "Aucune connexion temporaire trouvée."
 
 #: includes/class-admin.php
-msgid "Select Role"
-msgstr "Sélectionner un rôle"
+msgid "%d uses (unlimited)"
+msgstr "%d utilisations (illimité)"
 
 #: includes/class-admin.php
-msgid "Administrator"
-msgstr "Administrateur"
+msgid "One-time"
+msgstr "Usage unique"
 
 #: includes/class-admin.php
-msgid "Editor"
-msgstr "Éditeur"
+msgid "used"
+msgstr "utilisé"
 
 #: includes/class-admin.php
-msgid "Author"
-msgstr "Auteur"
+msgid "%d/%d"
+msgstr "%d/%d"
 
 #: includes/class-admin.php
-msgid "Contributor"
-msgstr "Contributeur"
+msgid "Expired"
+msgstr "Expiré"
 
 #: includes/class-admin.php
-msgid "Subscriber"
-msgstr "Abonné"
+msgid "Active"
+msgstr "Actif"
 
 #: includes/class-admin.php
-msgid "Email Address"
-msgstr "Adresse e-mail"
+msgid "Copy login URL"
+msgstr "Copier l'URL de connexion"
 
 #: includes/class-admin.php
-msgid "Expiration Date & Time"
-msgstr "Date et heure d'expiration"
+msgid "Resend verification code to this email"
+msgstr "Renvoyer le code de vérification à cet e-mail"
 
 #: includes/class-admin.php
-msgid "Maximum Uses"
-msgstr "Nombre maximum d'utilisations"
+msgid "Delete this temporary login"
+msgstr "Supprimer cette connexion temporaire"
 
 #: includes/class-admin.php
-msgid "Create Login URL"
-msgstr "Créer l'URL de connexion"
+msgid "&laquo;"
+msgstr "&laquo;"
 
 #: includes/class-admin.php
-msgid "Cancel"
-msgstr "Annuler"
+msgid "&raquo;"
+msgstr "&raquo;"
 
 #: includes/class-admin.php
-msgid "Login URL created successfully!"
-msgstr "URL de connexion créée avec succès !"
+msgid "Activity Log"
+msgstr "Journal d'activité"
 
 #: includes/class-admin.php
-msgid "Login URL revoked."
-msgstr "URL de connexion révoquée."
+msgid "Track actions performed by temporary users"
+msgstr "Suivre les actions effectuées par les utilisateurs temporaires"
 
 #: includes/class-admin.php
-msgid "Login URL deleted."
-msgstr "URL de connexion supprimée."
+msgid "Audit Trail"
+msgstr "Piste d'audit"
 
 #: includes/class-admin.php
-msgid "Error creating login URL."
-msgstr "Erreur lors de la création de l'URL de connexion."
+msgid "All Types"
+msgstr "Tous les types"
 
 #: includes/class-admin.php
-msgid "Error revoking login URL."
-msgstr "Erreur lors de la révocation de l'URL de connexion."
+msgid "Posts"
+msgstr "Articles"
 
 #: includes/class-admin.php
-msgid "Error deleting login URL."
-msgstr "Erreur lors de la suppression de l'URL de connexion."
+msgid "Media"
+msgstr "Médias"
 
 #: includes/class-admin.php
-msgid "Are you sure you want to revoke this login URL?"
-msgstr "Êtes-vous sûr de vouloir révoquer cette URL de connexion ?"
+msgid "Comments"
+msgstr "Commentaires"
 
 #: includes/class-admin.php
-msgid "Are you sure you want to delete this login URL?"
-msgstr "Êtes-vous sûr de vouloir supprimer cette URL de connexion ?"
+msgid "Users"
+msgstr "Utilisateurs"
 
 #: includes/class-admin.php
-msgid "URL copied to clipboard!"
-msgstr "URL copiée dans le presse-papiers !"
+msgid "Plugins"
+msgstr "Extensions"
 
 #: includes/class-admin.php
-msgid "Failed to copy URL."
-msgstr "Échec de la copie de l'URL."
+msgid "Themes"
+msgstr "Thèmes"
 
 #: includes/class-admin.php
-msgid "Please select a role."
-msgstr "Veuillez sélectionner un rôle."
+msgid "Settings"
+msgstr "Paramètres"
 
 #: includes/class-admin.php
-msgid "Please enter a valid email address."
-msgstr "Veuillez entrer une adresse e-mail valide."
+msgid "Filter"
+msgstr "Filtrer"
 
 #: includes/class-admin.php
-msgid "Please set an expiration date."
-msgstr "Veuillez définir une date d'expiration."
+msgid "Clear Filter"
+msgstr "Effacer le filtre"
 
 #: includes/class-admin.php
-msgid "Code Expiration (minutes)"
-msgstr "Expiration du code (minutes)"
+msgid "Logging"
+msgstr "Journalisation"
 
 #: includes/class-admin.php
-msgid "How long verification codes remain valid."
-msgstr "Durée de validité des codes de vérification."
+msgid "Time"
+msgstr "Heure"
 
 #: includes/class-admin.php
-msgid "Save Settings"
-msgstr "Enregistrer les paramètres"
+msgid "Action"
+msgstr "Action"
 
 #: includes/class-admin.php
-msgid "Settings saved successfully."
-msgstr "Paramètres enregistrés avec succès."
+msgid "User"
+msgstr "Utilisateur"
 
 #: includes/class-admin.php
-msgid "Error saving settings."
-msgstr "Erreur lors de l'enregistrement des paramètres."
+msgid "Object"
+msgstr "Objet"
 
 #: includes/class-admin.php
-msgid "QuickEntry - Create Temporary Login"
-msgstr "QuickEntry - Créer une connexion temporaire"
+msgid "IP Address"
+msgstr "Adresse IP"
 
 #: includes/class-admin.php
-msgid "Expiration"
-msgstr "Expiration"
+msgid "No activity logged yet."
+msgstr "Aucune activité enregistrée pour le moment."
 
 #: includes/class-admin.php
-msgid "Max Uses"
-msgstr "Utilisations max"
+msgid "Unknown"
+msgstr "Inconnu"
 
 #: includes/class-admin.php
-msgid "Create"
-msgstr "Créer"
+msgid "N/A"
+msgstr "N/A"
 
 #: includes/class-admin.php
-msgid "Login URL:"
-msgstr "URL de connexion :"
+msgid "Activity logging is currently disabled. Enable it using the toggle above to start tracking user actions."
+msgstr "La journalisation est actuellement désactivée. Activez-la avec le bouton ci-dessus pour commencer à suivre les actions des utilisateurs."
+
+#: includes/class-admin.php
+msgid "Temporary Login Created"
+msgstr "Connexion temporaire créée"
+
+#: includes/class-admin.php
+msgid "Your temporary login URL has been generated:"
+msgstr "Votre URL de connexion temporaire a été générée :"
 
 #: includes/class-admin.php
 msgid "Copy"
 msgstr "Copier"
 
 #: includes/class-admin.php
+msgid "Instructions:"
+msgstr "Instructions :"
+
+#: includes/class-admin.php
+msgid "Copy the URL above and send it to the user."
+msgstr "Copiez l'URL ci-dessus et envoyez-la à l'utilisateur."
+
+#: includes/class-admin.php
+msgid "When they click the link, a 6-digit verification code will be sent to their email."
+msgstr "Lorsqu'il cliquera sur le lien, un code de vérification à 6 chiffres sera envoyé à son e-mail."
+
+#: includes/class-admin.php
+msgid "They enter the code to gain access."
+msgstr "Il saisit le code pour obtenir l'accès."
+
+#: includes/class-admin.php
 msgid "Close"
 msgstr "Fermer"
 
-#: includes/class-authenticator.php
-msgid "Invalid verification code."
-msgstr "Code de vérification invalide."
+#: includes/class-admin.php
+msgid "The role that will be assigned to the temporary user."
+msgstr "Le rôle qui sera attribué à l'utilisateur temporaire."
+
+#: includes/class-admin.php
+msgid "The verification code will be sent to this email address."
+msgstr "Le code de vérification sera envoyé à cette adresse e-mail."
+
+#: includes/class-admin.php
+msgid "Enter 0 for unlimited uses."
+msgstr "Entrez 0 pour un nombre illimité d'utilisations."
+
+#: includes/class-admin.php
+msgid "Permission denied."
+msgstr "Permission refusée."
+
+#: includes/class-admin.php
+msgid "Invalid email address."
+msgstr "Adresse e-mail invalide."
+
+#: includes/class-admin.php
+msgid "Invalid role selected."
+msgstr "Rôle sélectionné invalide."
+
+#: includes/class-admin.php
+msgid "This role cannot be assigned via QuickEntry."
+msgstr "Ce rôle ne peut pas être attribué via QuickEntry."
+
+#: includes/class-admin.php
+msgid "Expiration date must be in the future."
+msgstr "La date d'expiration doit être dans le futur."
+
+#: includes/class-admin.php
+msgid "Failed to create temporary login."
+msgstr "Échec de la création de la connexion temporaire."
+
+#: includes/class-admin.php
+msgid "Temporary login created successfully!"
+msgstr "Connexion temporaire créée avec succès !"
+
+#: includes/class-admin.php
+msgid "Failed to delete temporary login."
+msgstr "Échec de la suppression de la connexion temporaire."
+
+#: includes/class-admin.php
+msgid "Invalid request."
+msgstr "Requête invalide."
+
+#: includes/class-admin.php
+msgid "Verification code sent to %s"
+msgstr "Code de vérification envoyé à %s"
+
+#: includes/class-admin.php
+msgid "Failed to resend code."
+msgstr "Échec du renvoi du code."
+
+#: includes/class-admin.php
+msgid "Activity logging enabled."
+msgstr "Journalisation activée."
+
+#: includes/class-admin.php
+msgid "Activity logging disabled."
+msgstr "Journalisation désactivée."
+
+#: includes/class-admin.php
+msgid "Tab functionality has been removed."
+msgstr "La fonctionnalité d'onglets a été supprimée."
 
 #: includes/class-authenticator.php
-msgid "Verification code has expired."
-msgstr "Le code de vérification a expiré."
+msgid "Verification failed. Please check your code and try again."
+msgstr "Échec de la vérification. Veuillez vérifier votre code et réessayer."
 
 #: includes/class-authenticator.php
-msgid "Too many failed attempts. Please request a new code."
-msgstr "Trop de tentatives échouées. Veuillez demander un nouveau code."
+msgid "This link has been temporarily locked due to too many attempts. Please try again later."
+msgstr "Ce lien a été temporairement verrouillé en raison de trop nombreuses tentatives. Veuillez réessayer plus tard."
 
 #: includes/class-authenticator.php
-msgid "This login URL is no longer valid."
-msgstr "Cette URL de connexion n'est plus valide."
+msgid "Your verification code has expired. Please request a new one."
+msgstr "Votre code de vérification a expiré. Veuillez en demander un nouveau."
 
 #: includes/class-authenticator.php
-msgid "Verification successful!"
-msgstr "Vérification réussie !"
+msgid "Failed to create user account."
+msgstr "Échec de la création du compte utilisateur."
 
-#: includes/class-database.php
-msgid "Temporary login table created successfully."
-msgstr "Table de connexion temporaire créée avec succès."
+#: includes/class-authenticator.php
+msgid "Login successful!"
+msgstr "Connexion réussie !"
 
 #: includes/class-email.php
-msgid "Your verification code"
+msgid "Your Verification Code for %s"
+msgstr "Votre code de vérification pour %s"
+
+#: includes/class-email.php
+msgid "Temporary Access Verification"
+msgstr "Vérification d'accès temporaire"
+
+#: includes/class-email.php
+msgid "Hello,"
+msgstr "Bonjour,"
+
+#: includes/class-email.php
+msgid "You have been granted temporary access to"
+msgstr "Un accès temporaire vous a été accordé à"
+
+#: includes/class-email.php
+msgid "Please use the verification code below to log in:"
+msgstr "Veuillez utiliser le code de vérification ci-dessous pour vous connecter :"
+
+#: includes/class-email.php
+msgid "Your Verification Code"
 msgstr "Votre code de vérification"
 
 #: includes/class-email.php
-msgid "Your verification code is: %s"
-msgstr "Votre code de vérification est : %s"
+msgid "Important: This code expires in %d minutes."
+msgstr "Important : ce code expire dans %d minutes."
 
 #: includes/class-email.php
-msgid "This code will expire in %d minutes."
-msgstr "Ce code expirera dans %d minutes."
+msgid "If you did not request this access, please ignore this email or contact the site administrator."
+msgstr "Si vous n'avez pas demandé cet accès, veuillez ignorer cet e-mail ou contacter l'administrateur du site."
 
 #: includes/class-email.php
-msgid "If you did not request this code, please ignore this email."
-msgstr "Si vous n'avez pas demandé ce code, veuillez ignorer cet e-mail."
+msgid "For security reasons, do not share this code with anyone."
+msgstr "Pour des raisons de sécurité, ne partagez ce code avec personne."
 
 #: includes/class-email.php
-msgid "Verification code sent successfully."
-msgstr "Code de vérification envoyé avec succès."
-
-#: includes/class-email.php
-msgid "Failed to send verification code."
-msgstr "Échec de l'envoi du code de vérification."
+msgid "This is an automated email from %s. Please do not reply to this email."
+msgstr "Ceci est un e-mail automatique de %s. Veuillez ne pas répondre à cet e-mail."
 
 #: includes/class-frontend.php
-msgid "This temporary login link is invalid."
-msgstr "Ce lien de connexion temporaire est invalide."
+msgid "This login link is no longer valid."
+msgstr "Ce lien de connexion n'est plus valide."
 
 #: includes/class-frontend.php
 msgid "Invalid Link - QuickEntry"
 msgstr "Lien invalide - QuickEntry"
-
-#: includes/class-frontend.php
-msgid "This temporary login link has expired."
-msgstr "Ce lien de connexion temporaire a expiré."
-
-#: includes/class-frontend.php
-msgid "Link Expired - QuickEntry"
-msgstr "Lien expiré - QuickEntry"
-
-#: includes/class-frontend.php
-msgid "This temporary login link has reached its maximum number of uses."
-msgstr "Ce lien de connexion temporaire a atteint son nombre maximum d'utilisations."
-
-#: includes/class-frontend.php
-msgid "Link No Longer Available - QuickEntry"
-msgstr "Lien plus disponible - QuickEntry"
 
 #: includes/class-frontend.php
 msgid "Verification Code"
@@ -393,10 +530,6 @@ msgid "Invalid verification code. Please try again."
 msgstr "Code de vérification invalide. Veuillez réessayer."
 
 #: includes/class-frontend.php
-msgid "An error occurred. Please try again."
-msgstr "Une erreur est survenue. Veuillez réessayer."
-
-#: includes/class-frontend.php
 msgid "Sending..."
 msgstr "Envoi..."
 
@@ -419,6 +552,18 @@ msgstr "Champs obligatoires manquants."
 #: includes/class-frontend.php
 msgid "Invalid token."
 msgstr "Jeton invalide."
+
+#: includes/class-frontend.php
+msgid "Verification successful!"
+msgstr "Vérification réussie !"
+
+#: includes/class-frontend.php
+msgid "Please wait before requesting another code."
+msgstr "Veuillez patienter avant de demander un autre code."
+
+#: includes/class-frontend.php
+msgid "Too many code requests. Please try again later."
+msgstr "Trop de demandes de code. Veuillez réessayer plus tard."
 
 #: includes/class-frontend.php
 msgid "Code sent successfully."
