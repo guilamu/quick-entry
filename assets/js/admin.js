@@ -110,18 +110,96 @@
             changeYear: true
         });
 
+        function isSkipConfirmationEnabled() {
+            return $('#qentry-skip-confirmation-code').is(':checked');
+        }
+
+        function updateModalInstructions(skipConfirmation) {
+            $('#qentry-modal-step-2').text(
+                skipConfirmation ? qentry_data.i18n.modal_step_two_skip : qentry_data.i18n.modal_step_two_standard
+            );
+            $('#qentry-modal-step-3').text(
+                skipConfirmation ? qentry_data.i18n.modal_step_three_skip : qentry_data.i18n.modal_step_three_standard
+            );
+        }
+
+        function updateSkipConfirmationState() {
+            var skipConfirmation = isSkipConfirmationEnabled();
+            var $emailField = $('#qentry-field-email');
+            var $email = $('#qentry-email');
+            var $emailHint = $('#qentry-email-hint');
+            var $optionCard = $emailField.find('.qentry-option-card');
+            var $maxUses = $('#qentry-max-uses');
+            var $maxUsesHint = $('#qentry-max-uses-hint');
+
+            if (!$email.length || !$maxUses.length) {
+                updateModalInstructions(skipConfirmation);
+                updateSummary();
+                return;
+            }
+
+            if (typeof $email.data('default-placeholder') === 'undefined') {
+                $email.data('default-placeholder', $email.attr('placeholder') || '');
+            }
+
+            if (skipConfirmation) {
+                $email.data('stored-value', $email.val());
+                $email.val('');
+                $email.prop('disabled', true);
+                $email.prop('required', false);
+                $email.attr('placeholder', qentry_data.i18n.email_placeholder_skip);
+                $emailField.addClass('qentry-field-disabled');
+                $optionCard.addClass('is-active');
+                $emailHint.text(qentry_data.i18n.email_hint_skip);
+
+                $maxUses.data('stored-value', $maxUses.val());
+                $maxUses.val(1);
+                $maxUses.prop('disabled', true);
+                $maxUsesHint.text(qentry_data.i18n.max_uses_hint_skip);
+            } else {
+                $email.prop('disabled', false);
+                $email.prop('required', true);
+                $email.attr('placeholder', $email.data('default-placeholder') || '');
+                $emailField.removeClass('qentry-field-disabled');
+                $optionCard.removeClass('is-active');
+                $emailHint.text(qentry_data.i18n.email_hint_default);
+
+                if (typeof $email.data('stored-value') !== 'undefined') {
+                    $email.val($email.data('stored-value'));
+                }
+
+                $maxUses.prop('disabled', false);
+                $maxUses.val(
+                    typeof $maxUses.data('stored-value') !== 'undefined' && $maxUses.data('stored-value') !== ''
+                        ? $maxUses.data('stored-value')
+                        : 0
+                );
+                $maxUsesHint.text(qentry_data.i18n.max_uses_hint_default);
+            }
+
+            updateModalInstructions(skipConfirmation);
+            updateSummary();
+        }
+
         // Number of uses change
         $(document).on('change input', '#qentry-max-uses', function() {
             updateSummary();
+        });
+
+        $(document).on('change', '#qentry-skip-confirmation-code', function() {
+            updateSkipConfirmationState();
         });
 
         // Reset button
         $(document).on('click', '#qentry-reset-btn', function() {
             var $form = $('#qentry-create-form');
             $form[0].reset();
+            $('#qentry-skip-confirmation-code').prop('checked', false);
+            $('#qentry-email').data('stored-value', '');
+            $('#qentry-max-uses').data('stored-value', 0);
             $('#qentry-max-uses').val(0);
             $('#qentry-expiration-time').val('23:59');
-            updateSummary();
+            updateSkipConfirmationState();
         });
 
         // Dynamic summary text
@@ -131,9 +209,10 @@
             var dateVal = $('#qentry-expiration-date').val();
             var timeVal = $('#qentry-expiration-time').val();
             var maxUses = parseInt($('#qentry-max-uses').val()) || 0;
+            var skipConfirmation = isSkipConfirmationEnabled();
 
             if (!roleText && !dateVal) {
-                $('#qentry-summary-text').text('Fill out the form to see a summary of the link you are about to create.');
+                $('#qentry-summary-text').text(qentry_data.i18n.summary_default);
                 return;
             }
 
@@ -144,7 +223,7 @@
                 parts.push(roleText);
             }
 
-            parts.push('login');
+            parts.push(skipConfirmation ? 'direct-login link' : 'login');
 
             if (dateVal) {
                 // Parse mm/dd/yy or mm/dd/yyyy
@@ -207,14 +286,15 @@
             var expiryDate = $('#qentry-expiration-date').val();
             var expiryTime = $('#qentry-expiration-time').val();
             var maxUses = parseInt($('#qentry-max-uses').val()) || 0;
+            var skipConfirmation = isSkipConfirmationEnabled();
 
             // Validate required fields
             if (!role) {
                 $('#qentry-role').focus();
                 return;
             }
-            if (!email) {
-                alert('Please fill in all required fields.');
+            if (!skipConfirmation && !email) {
+                alert(qentry_data.i18n.required_fields);
                 return;
             }
 
@@ -229,6 +309,7 @@
                     nonce: qentry_data.nonce,
                     qentry_role: role,
                     qentry_email: email,
+                    qentry_skip_confirmation_code: skipConfirmation ? 1 : 0,
                     qentry_expiration_date: expiryDate,
                     qentry_expiration_time: expiryTime,
                     qentry_max_uses: maxUses
@@ -236,12 +317,16 @@
                 success: function(response) {
                     if (response.success) {
                         $('#qentry-generated-url').val(response.data.url);
+                        updateModalInstructions(!!response.data.skip_confirmation_code);
                         $('#qentry-modal').fadeIn(200);
 
                         $form[0].reset();
+                        $('#qentry-skip-confirmation-code').prop('checked', false);
+                        $('#qentry-email').data('stored-value', '');
+                        $('#qentry-max-uses').data('stored-value', 0);
                         $('#qentry-expiration-time').val('23:59');
                         $('#qentry-max-uses').val(0);
-                        updateSummary();
+                        updateSkipConfirmationState();
                     } else {
                         alert(response.data.message || qentry_data.i18n.error);
                     }
@@ -439,6 +524,8 @@
                 }
             });
         });
+
+        updateSkipConfirmationState();
     });
 
 })(jQuery);

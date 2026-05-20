@@ -166,6 +166,58 @@
     margin: 0.2rem 0 0;
 }
 
+.qentry-option-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-top: 0.45rem;
+    padding: 0.85rem 0.95rem;
+    border: 1px solid var(--wp-border);
+    border-radius: var(--radius-md);
+    background: #fffdf7;
+    cursor: pointer;
+    transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+}
+
+.qentry-option-card:hover {
+    border-color: var(--wp-border-focus);
+}
+
+.qentry-option-card.is-active {
+    border-color: var(--wp-border-focus);
+    background: var(--wp-blue-light);
+}
+
+.qentry-option-control {
+    display: flex;
+    align-items: center;
+    padding-top: 0.05rem;
+}
+
+.qentry-option-control input[type="checkbox"] {
+    margin: 0;
+    accent-color: var(--wp-blue);
+}
+
+.qentry-option-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.qentry-option-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--wp-text);
+    line-height: 1.4;
+}
+
+.qentry-option-description {
+    font-size: 0.75rem;
+    color: var(--wp-text-muted);
+    line-height: 1.5;
+}
+
 /* === Input base === */
 .qentry-input-wrap {
     position: relative;
@@ -219,9 +271,30 @@
     border-color: var(--wp-border-focus);
     box-shadow: var(--wp-focus-shadow);
 }
+
+.qentry-create-section input:disabled,
+.qentry-create-section select:disabled {
+    background: var(--wp-surface-2);
+    color: var(--wp-text-faint);
+    border-color: var(--wp-border);
+    cursor: not-allowed;
+}
+
 .qentry-has-icon input,
 .qentry-has-icon select {
     padding-left: 2.1rem;
+}
+
+.qentry-field-disabled .qentry-field-label {
+    color: var(--wp-text-muted);
+}
+
+.qentry-field-disabled .qentry-required-dot {
+    opacity: 0.35;
+}
+
+.qentry-field-disabled .qentry-input-icon {
+    color: var(--wp-text-faint);
 }
 
 /* Select arrow */
@@ -264,6 +337,13 @@
     transition: border-color var(--transition), box-shadow var(--transition);
     width: 100%;
     box-sizing: border-box;
+}
+
+.qentry-table-note {
+    margin-top: 0.2rem;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: var(--wp-text-faint);
 }
 .qentry-number-input:focus {
     border-color: var(--wp-border-focus);

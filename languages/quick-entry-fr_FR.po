@@ -2,10 +2,10 @@
 # This file is distributed under the GNU Affero General Public License v3.0 (AGPL-3.0).
 msgid ""
 msgstr ""
-"Project-Id-Version: QuickEntry 1.2.3\n"
+"Project-Id-Version: QuickEntry 1.3.0\n"
 "Report-Msgid-Bugs-To: https://github.com/guilamu/quick-entry/issues\n"
 "POT-Creation-Date: 2026-04-05 00:00+0000\n"
-"PO-Revision-Date: 2026-04-05 14:19+0200\n"
+"PO-Revision-Date: 2026-05-20 13:13+0200\n"
 "Last-Translator: guilamu\n"
 "Language-Team: French (France)\n"
 "Language: fr_FR\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 3.8\n"
+"X-Generator: Poedit 3.9\n"
 "X-Poedit-KeywordsList: "
 "__;_e;_x:1,2c;_ex:1,2c;_n:1,2;_nx:1,2,4c;_n_noop:1,2;_nx_noop:1,2,3c;esc_attr__;esc_html__;esc_attr_e;esc_html_e;esc_attr_x:1,2c;esc_html_x:1,2c\n"
 "X-Poedit-Basepath: ..\n"
@@ -26,8 +26,8 @@ msgid "QuickEntry"
 msgstr "QuickEntry"
 
 #: quick-entry.php
-msgid "Create temporary login URLs with email verification and role assignment."
-msgstr "Créez des URL de connexion temporaires avec vérification par e-mail et attribution de rôle."
+msgid "Create temporary login URLs with optional email verification or direct login and role assignment."
+msgstr "Créez des URL de connexion temporaires avec vérification facultative par e-mail ou connexion directe et attribution de rôle."
 
 #: quick-entry.php
 msgid "More information about QuickEntry"
@@ -66,6 +66,30 @@ msgid "URL copied to clipboard!"
 msgstr "URL copiée dans le presse-papiers !"
 
 #: includes/class-admin.php
+msgid "Please fill in all required fields."
+msgstr "Veuillez remplir tous les champs obligatoires."
+
+#: includes/class-admin.php
+msgid "This link will log in directly. The email address is not used."
+msgstr "Ce lien connectera directement l'utilisateur. L'adresse e-mail n'est pas utilisée."
+
+#: includes/class-admin.php
+msgid "No email needed for direct login"
+msgstr "Aucun e-mail requis pour la connexion directe"
+
+#: includes/class-admin.php
+msgid "Direct-login links are always single-use."
+msgstr "Les liens de connexion directe sont toujours à usage unique."
+
+#: includes/class-admin.php
+msgid "When they click the link, they will log in immediately."
+msgstr "Lorsqu'il clique sur le lien, il sera connecté immédiatement."
+
+#: includes/class-admin.php
+msgid "Direct-login links are single-use, so share them only with the intended person."
+msgstr "Les liens de connexion directe sont à usage unique ; partagez-les uniquement avec la personne concernée."
+
+#: includes/class-admin.php
 msgid "Create Temporary Login"
 msgstr "Créer une connexion temporaire"
 
@@ -96,6 +120,14 @@ msgstr "Adresse e-mail"
 #: includes/class-admin.php
 msgid "Verification code will be sent to this address."
 msgstr "Le code de vérification sera envoyé à cette adresse."
+
+#: includes/class-admin.php
+msgid "Skip confirmation code"
+msgstr "Ignorer le code de confirmation"
+
+#: includes/class-admin.php
+msgid "User logs in with the link only. No email code is required."
+msgstr "L'utilisateur se connecte uniquement avec le lien. Aucun code par e-mail n'est requis."
 
 #: includes/class-admin.php
 msgid "Expiration Date & Time"
@@ -136,6 +168,14 @@ msgstr "ID"
 #: includes/class-admin.php
 msgid "Email"
 msgstr "E-mail"
+
+#: includes/class-admin.php
+msgid "Direct login"
+msgstr "Connexion directe"
+
+#: includes/class-admin.php
+msgid "No email confirmation required."
+msgstr "Aucune confirmation par e-mail requise."
 
 #: includes/class-admin.php
 msgid "Role"
@@ -390,6 +430,10 @@ msgid "Failed to resend code."
 msgstr "Échec du renvoi du code."
 
 #: includes/class-admin.php
+msgid "Direct-login links do not send verification codes."
+msgstr "Les liens de connexion directe n'envoient pas de codes de vérification."
+
+#: includes/class-admin.php
 msgid "Activity logging enabled."
 msgstr "Journalisation activée."
 
@@ -468,6 +512,10 @@ msgstr "Ce lien de connexion n'est plus valide."
 #: includes/class-frontend.php
 msgid "Invalid Link - QuickEntry"
 msgstr "Lien invalide - QuickEntry"
+
+#: includes/class-frontend.php
+msgid "Login Failed - QuickEntry"
+msgstr "Échec de la connexion - QuickEntry"
 
 #: includes/class-frontend.php
 msgid "Verification Code"
@@ -556,6 +604,10 @@ msgstr "Code envoyé avec succès."
 #: includes/class-frontend.php
 msgid "Failed to send code."
 msgstr "Échec de l'envoi du code."
+
+#: includes/class-frontend.php
+msgid "This link logs in directly and does not send a verification code."
+msgstr "Ce lien connecte directement et n'envoie pas de code de vérification."
 
 #: includes/class-github-updater.php
 msgid "Unable to rename the update folder. Please retry or update manually."

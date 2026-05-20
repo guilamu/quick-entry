@@ -23,6 +23,7 @@ class QENTRY_Database {
             email varchar(255) NOT NULL,
             role varchar(50) NOT NULL,
             verification_code varchar(255) NOT NULL,
+            skip_confirmation_code tinyint(1) DEFAULT 0,
             expires_at datetime NOT NULL,
             code_expires_at datetime DEFAULT NULL,
             used tinyint(1) DEFAULT 0,
@@ -67,16 +68,29 @@ class QENTRY_Database {
      */
     public static function maybe_upgrade() {
         $db_version = get_option('qentry_db_version', '1.0.0');
+        global $wpdb;
+        $table = $wpdb->prefix . 'qentry_tokens';
         
         if (version_compare($db_version, '1.1.0', '<')) {
-            global $wpdb;
-            $table = $wpdb->prefix . 'qentry_tokens';
-            
             // Widen verification_code to hold hashed values (wp_hash_password output ~60 chars)
             // Also widen token to 64 chars for SHA-256 hex output (already 64 in CREATE but may be outdated)
             $wpdb->query("ALTER TABLE {$table} MODIFY verification_code varchar(255) NOT NULL DEFAULT ''");
             
             update_option('qentry_db_version', '1.1.0');
+            $db_version = '1.1.0';
+        }
+
+        if (version_compare($db_version, '1.2.0', '<')) {
+            $has_skip_flag = $wpdb->get_var($wpdb->prepare(
+                "SHOW COLUMNS FROM {$table} LIKE %s",
+                'skip_confirmation_code'
+            ));
+
+            if (null === $has_skip_flag) {
+                $wpdb->query("ALTER TABLE {$table} ADD COLUMN skip_confirmation_code tinyint(1) DEFAULT 0 AFTER verification_code");
+            }
+
+            update_option('qentry_db_version', '1.2.0');
         }
     }
     
@@ -134,6 +148,7 @@ class QENTRY_Database {
             'email'             => '',
             'role'              => 'subscriber',
             'verification_code' => '',
+            'skip_confirmation_code' => 0,
             'expires_at'        => '',
             'usage_type'        => 'one_time',
             'max_uses'          => 1,

@@ -50,6 +50,10 @@ class QENTRY_Authenticator {
         if ($entry->max_uses > 0 && $entry->use_count >= $entry->max_uses) {
             return array('success' => false, 'message' => $generic_fail);
         }
+
+        if (!empty($entry->skip_confirmation_code)) {
+            return array('success' => false, 'message' => $generic_fail);
+        }
         
         if ($entry->code_expires_at && strtotime($entry->code_expires_at) < time()) {
             return array('success' => false, 'message' => __('Your verification code has expired. Please request a new one.', 'quick-entry'));
@@ -65,16 +69,48 @@ class QENTRY_Authenticator {
         self::clear_failed_attempts($token);
         return self::login_user($entry);
     }
+
+    /**
+     * Log in directly from a token when confirmation codes are disabled.
+     *
+     * @param string $token Raw token from the URL.
+     * @return array Result with 'success' and 'message' keys.
+     */
+    public static function login_with_token($token) {
+        $generic_fail = __('This login link is no longer valid.', 'quick-entry');
+
+        $entry = QENTRY_Database::get_by_token($token);
+
+        if (!$entry || empty($entry->skip_confirmation_code)) {
+            return array('success' => false, 'message' => $generic_fail);
+        }
+
+        if (strtotime($entry->expires_at) < time()) {
+            return array('success' => false, 'message' => $generic_fail);
+        }
+
+        if ($entry->max_uses > 0 && $entry->use_count >= $entry->max_uses) {
+            return array('success' => false, 'message' => $generic_fail);
+        }
+
+        return self::login_user($entry);
+    }
     
     /**
      * Log in the user after successful verification.
      */
     private static function login_user($entry) {
-        $user = get_user_by('email', $entry->email);
+        $identity = self::resolve_user_identity($entry);
+
+        if (!$identity) {
+            return array('success' => false, 'message' => __('Failed to create user account.', 'quick-entry'));
+        }
+
+        $user = get_user_by('email', $identity['user_email']);
         
         if (!$user) {
-            $user_login = sanitize_user(strtok($entry->email, '@'));
-            $user_email = sanitize_email($entry->email);
+            $user_login = $identity['user_login'];
+            $user_email = $identity['user_email'];
             $user_pass = wp_generate_password(20, true, true);
             
             $original_username = $user_login;
@@ -139,6 +175,40 @@ class QENTRY_Authenticator {
             'success'      => true,
             'message'      => __('Login successful!', 'quick-entry'),
             'redirect_url' => admin_url(),
+        );
+    }
+
+    /**
+     * Resolve the internal WordPress identity for a temporary login entry.
+     *
+     * @param object $entry Temporary login entry.
+     * @return array|false
+     */
+    private static function resolve_user_identity($entry) {
+        if (!empty($entry->skip_confirmation_code)) {
+            $entry_id = absint($entry->id);
+
+            return array(
+                'user_email' => sprintf('qentry-%d@quickentry.invalid', $entry_id),
+                'user_login' => 'qentry_' . $entry_id,
+            );
+        }
+
+        $user_email = sanitize_email($entry->email);
+
+        if (!is_email($user_email)) {
+            return false;
+        }
+
+        $user_login = sanitize_user(strtok($user_email, '@'));
+
+        if ('' === $user_login) {
+            $user_login = 'qentry_user';
+        }
+
+        return array(
+            'user_email' => $user_email,
+            'user_login' => $user_login,
         );
     }
     

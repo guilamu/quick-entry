@@ -35,10 +35,10 @@ class QENTRY_Frontend {
             && ($entry->max_uses == 0 || $entry->use_count < $entry->max_uses);
         
         if (!$is_valid) {
-            wp_die(
+            self::render_status_page(
                 __('This login link is no longer valid.', 'quick-entry'),
                 __('Invalid Link - QuickEntry', 'quick-entry'),
-                array('response' => 403, 'back_link' => true)
+                403
             );
         }
         
@@ -46,8 +46,79 @@ class QENTRY_Frontend {
         header('Referrer-Policy: no-referrer');
         header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
         header('Pragma: no-cache');
+
+        if (!empty($entry->skip_confirmation_code)) {
+            $result = QENTRY_Authenticator::login_with_token($token);
+
+            if ($result['success']) {
+                wp_safe_redirect($result['redirect_url']);
+                exit;
+            }
+
+            self::render_status_page(
+                $result['message'],
+                __('Login Failed - QuickEntry', 'quick-entry'),
+                403
+            );
+        }
         
         self::render_verification_page($entry, $token);
+        exit;
+    }
+
+    /**
+     * Render a normal QuickEntry status page without triggering wp_die().
+     *
+     * @param string $message       Message shown to the user.
+     * @param string $title         Page title.
+     * @param int    $response_code HTTP status code.
+     */
+    private static function render_status_page($message, $title, $response_code = 403) {
+        status_header(absint($response_code));
+        header('Referrer-Policy: no-referrer');
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        header('Pragma: no-cache');
+
+        ob_start();
+        ?>
+        <!DOCTYPE html>
+        <html <?php language_attributes(); ?>>
+        <head>
+            <meta charset="<?php bloginfo('charset'); ?>">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title><?php echo esc_html(get_bloginfo('name')); ?> &rsaquo; <?php echo esc_html($title); ?></title>
+            <?php wp_head(); ?>
+        </head>
+        <body class="qentry-verify-body login">
+            <div class="qentry-verify-container">
+                <h1 class="screen-reader-text"><?php echo esc_html($title); ?></h1>
+                <div class="qentry-verify-box">
+                    <div class="qentry-verify-card">
+                        <div class="qentry-verify-header">
+                            <a href="<?php echo esc_url(home_url('/')); ?>" title="<?php esc_attr_e('Powered by WordPress', 'quick-entry'); ?>">
+                                <?php if (has_site_icon()) : ?>
+                                    <img src="<?php echo esc_url(get_site_icon_url()); ?>" alt="<?php echo esc_attr(get_bloginfo('name')); ?>" class="qentry-site-logo" width="84" height="84">
+                                <?php else : ?>
+                                    <img src="<?php echo esc_url(admin_url('images/wordpress-logo.svg?ver=20131107')); ?>" alt="<?php esc_attr_e('Powered by WordPress', 'quick-entry'); ?>" class="qentry-site-logo" width="84" height="84">
+                                <?php endif; ?>
+                            </a>
+                        </div>
+
+                        <div class="qentry-message qentry-message-error">
+                            <?php echo esc_html($message); ?>
+                        </div>
+                    </div>
+                    <p class="qentry-back-link">
+                        <a href="<?php echo esc_url(wp_login_url()); ?>"><?php _e('&larr; Go to login', 'quick-entry'); ?></a>
+                    </p>
+                </div>
+            </div>
+
+            <?php wp_footer(); ?>
+        </body>
+        </html>
+        <?php
+        echo ob_get_clean();
         exit;
     }
     
@@ -312,6 +383,10 @@ class QENTRY_Frontend {
         if (!$entry) {
             // Generic message — same response as valid token to prevent enumeration
             wp_send_json_error(array('message' => __('Invalid request.', 'quick-entry')));
+        }
+
+        if (!empty($entry->skip_confirmation_code)) {
+            wp_send_json_error(array('message' => __('This link logs in directly and does not send a verification code.', 'quick-entry')));
         }
         
         // Rate limit: max 1 code per 60 seconds per token (H02)

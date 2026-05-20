@@ -73,6 +73,17 @@ class QENTRY_Admin {
                 'confirm_delete' => __('Are you sure you want to delete this temporary login?', 'quick-entry'),
                 'deleted' => __('Temporary login deleted.', 'quick-entry'),
                 'copy_success' => __('URL copied to clipboard!', 'quick-entry'),
+                'required_fields' => __('Please fill in all required fields.', 'quick-entry'),
+                'summary_default' => __('Fill out the form to see a summary of the link you are about to create.', 'quick-entry'),
+                'email_hint_default' => __('Verification code will be sent to this address.', 'quick-entry'),
+                'email_hint_skip' => __('This link will log in directly. The email address is not used.', 'quick-entry'),
+                'email_placeholder_skip' => __('No email needed for direct login', 'quick-entry'),
+                'max_uses_hint_default' => __('Enter 0 for unlimited uses.', 'quick-entry'),
+                'max_uses_hint_skip' => __('Direct-login links are always single-use.', 'quick-entry'),
+                'modal_step_two_standard' => __('When they click the link, a 6-digit verification code will be sent to their email.', 'quick-entry'),
+                'modal_step_three_standard' => __('They enter the code to gain access.', 'quick-entry'),
+                'modal_step_two_skip' => __('When they click the link, they will log in immediately.', 'quick-entry'),
+                'modal_step_three_skip' => __('Direct-login links are single-use, so share them only with the intended person.', 'quick-entry'),
             ),
         ));
     }
@@ -167,7 +178,16 @@ class QENTRY_Admin {
                                         </span>
                                         <input type="email" name="qentry_email" id="qentry-email" required placeholder="user@example.com" autocomplete="email">
                                     </div>
-                                    <p class="qentry-field-hint"><?php _e('Verification code will be sent to this address.', 'quick-entry'); ?></p>
+                                    <p class="qentry-field-hint" id="qentry-email-hint"><?php _e('Verification code will be sent to this address.', 'quick-entry'); ?></p>
+                                    <label class="qentry-option-card" for="qentry-skip-confirmation-code">
+                                        <span class="qentry-option-control">
+                                            <input type="checkbox" name="qentry_skip_confirmation_code" id="qentry-skip-confirmation-code" value="1">
+                                        </span>
+                                        <span class="qentry-option-content">
+                                            <span class="qentry-option-title"><?php _e('Skip confirmation code', 'quick-entry'); ?></span>
+                                            <span class="qentry-option-description"><?php _e('User logs in with the link only. No email code is required.', 'quick-entry'); ?></span>
+                                        </span>
+                                    </label>
                                 </div>
 
                                 <!-- Expiration Date & Time -->
@@ -204,7 +224,7 @@ class QENTRY_Admin {
                                 <div class="qentry-field">
                                     <label class="qentry-field-label" for="qentry-max-uses"><?php _e('Number of Uses', 'quick-entry'); ?></label>
                                     <input type="number" name="qentry_max_uses" id="qentry-max-uses" value="0" min="0" class="qentry-number-input">
-                                    <p class="qentry-field-hint"><?php _e('Enter 0 for unlimited uses.', 'quick-entry'); ?></p>
+                                    <p class="qentry-field-hint" id="qentry-max-uses-hint"><?php _e('Enter 0 for unlimited uses.', 'quick-entry'); ?></p>
                                 </div>
 
                             </div><!-- /qentry-form-grid -->
@@ -284,7 +304,14 @@ class QENTRY_Admin {
                                 ?>
                                     <tr>
                                         <td class="column-id"><?php echo esc_html($login->id); ?></td>
-                                        <td class="column-email"><strong><?php echo esc_html($login->email); ?></strong></td>
+                                        <td class="column-email">
+                                            <?php if (!empty($login->skip_confirmation_code)) : ?>
+                                                <strong><?php _e('Direct login', 'quick-entry'); ?></strong>
+                                                <div class="qentry-table-note"><?php _e('No email confirmation required.', 'quick-entry'); ?></div>
+                                            <?php else : ?>
+                                                <strong><?php echo esc_html($login->email); ?></strong>
+                                            <?php endif; ?>
+                                        </td>
                                         <td class="column-role"><?php echo esc_html($all_roles[$login->role] ?? $login->role); ?></td>
                                         <td class="column-usage">
                                             <?php if ($login->max_uses == 0) : ?>
@@ -313,9 +340,11 @@ class QENTRY_Admin {
                                                     <span class="dashicons dashicons-clipboard"></span>
                                                 </button>
                                             <?php endif; ?>
-                                            <button class="button qentry-resend-btn" data-id="<?php echo esc_attr($login->id); ?>" data-email="<?php echo esc_attr($login->email); ?>" title="<?php _e('Resend verification code to this email', 'quick-entry'); ?>">
-                                                <span class="dashicons dashicons-email"></span>
-                                            </button>
+                                            <?php if (empty($login->skip_confirmation_code)) : ?>
+                                                <button class="button qentry-resend-btn" data-id="<?php echo esc_attr($login->id); ?>" data-email="<?php echo esc_attr($login->email); ?>" title="<?php _e('Resend verification code to this email', 'quick-entry'); ?>">
+                                                    <span class="dashicons dashicons-email"></span>
+                                                </button>
+                                            <?php endif; ?>
                                             <button class="button qentry-delete-btn button-link-delete" data-id="<?php echo esc_attr($login->id); ?>" title="<?php _e('Delete this temporary login', 'quick-entry'); ?>">
                                                 <span class="dashicons dashicons-trash"></span>
                                             </button>
@@ -473,7 +502,7 @@ class QENTRY_Admin {
                     <div class="qentry-modal-body">
                         <div class="qentry-success-message">
                             <span class="dashicons dashicons-yes-alt qentry-success-icon"></span>
-                            <p><?php _e('Your temporary login URL has been generated:', 'quick-entry'); ?></p>
+                            <p id="qentry-modal-description"><?php _e('Your temporary login URL has been generated:', 'quick-entry'); ?></p>
                         </div>
                         <div class="qentry-url-display">
                             <input type="text" id="qentry-generated-url" class="regular-text" readonly>
@@ -484,9 +513,9 @@ class QENTRY_Admin {
                         <div class="qentry-url-info">
                             <p><strong><?php _e('Instructions:', 'quick-entry'); ?></strong></p>
                             <ol>
-                                <li><?php _e('Copy the URL above and send it to the user.', 'quick-entry'); ?></li>
-                                <li><?php _e('When they click the link, a 6-digit verification code will be sent to their email.', 'quick-entry'); ?></li>
-                                <li><?php _e('They enter the code to gain access.', 'quick-entry'); ?></li>
+                                <li id="qentry-modal-step-1"><?php _e('Copy the URL above and send it to the user.', 'quick-entry'); ?></li>
+                                <li id="qentry-modal-step-2"><?php _e('When they click the link, a 6-digit verification code will be sent to their email.', 'quick-entry'); ?></li>
+                                <li id="qentry-modal-step-3"><?php _e('They enter the code to gain access.', 'quick-entry'); ?></li>
                             </ol>
                         </div>
                         <div class="qentry-modal-actions">
@@ -711,14 +740,19 @@ class QENTRY_Admin {
             wp_send_json_error(__('Permission denied.', 'quick-entry'));
         }
         
-        $role = sanitize_text_field($_POST['qentry_role']);
-        $email = sanitize_email($_POST['qentry_email']);
-        $expiration_date = sanitize_text_field($_POST['qentry_expiration_date']);
-        $expiration_time = sanitize_text_field($_POST['qentry_expiration_time']);
+        $role = sanitize_text_field($_POST['qentry_role'] ?? '');
+        $skip_confirmation_code = !empty($_POST['qentry_skip_confirmation_code']);
+        $email = $skip_confirmation_code ? '' : sanitize_email($_POST['qentry_email'] ?? '');
+        $expiration_date = sanitize_text_field($_POST['qentry_expiration_date'] ?? '');
+        $expiration_time = sanitize_text_field($_POST['qentry_expiration_time'] ?? '');
         $max_uses = intval($_POST['qentry_max_uses'] ?? 0);
 
-        if (!is_email($email)) {
+        if (!$skip_confirmation_code && !is_email($email)) {
             wp_send_json_error(__('Invalid email address.', 'quick-entry'));
+        }
+
+        if ($skip_confirmation_code) {
+            $max_uses = 1;
         }
 
         global $wp_roles;
@@ -737,8 +771,11 @@ class QENTRY_Admin {
             wp_send_json_error(__('Expiration date must be in the future.', 'quick-entry'));
         }
 
-        // Use random_int() instead of rand() for verification code (C03)
-        $verification_code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $verification_code = '';
+        if (!$skip_confirmation_code) {
+            // Use random_int() instead of rand() for verification code (C03)
+            $verification_code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        }
 
         // Determine usage type based on max_uses
         $usage_type = ($max_uses == 1 || $max_uses == 0) ? 'one_time' : 'multi_use';
@@ -746,7 +783,8 @@ class QENTRY_Admin {
         $data = array(
             'email'             => $email,
             'role'              => $role,
-            'verification_code' => wp_hash_password($verification_code), // Hash before storing (C04)
+            'verification_code' => $skip_confirmation_code ? '' : wp_hash_password($verification_code), // Hash before storing (C04)
+            'skip_confirmation_code' => $skip_confirmation_code ? 1 : 0,
             'expires_at'        => $expires_at,
             'max_uses'          => $max_uses,
             'usage_type'        => $usage_type,
@@ -769,9 +807,10 @@ class QENTRY_Admin {
         }
         
         wp_send_json_success(array(
-            'url'     => $login_url,
-            'email'   => $email,
-            'message' => __('Temporary login created successfully!', 'quick-entry'),
+            'url'                    => $login_url,
+            'email'                  => $email,
+            'skip_confirmation_code' => $skip_confirmation_code ? 1 : 0,
+            'message'                => __('Temporary login created successfully!', 'quick-entry'),
         ));
     }
     
@@ -812,6 +851,10 @@ class QENTRY_Admin {
         $entry = QENTRY_Database::get_by_id($id);
         if (!$entry || $entry->email !== $email) {
             wp_send_json_error(__('Invalid request.', 'quick-entry'));
+        }
+
+        if (!empty($entry->skip_confirmation_code)) {
+            wp_send_json_error(__('Direct-login links do not send verification codes.', 'quick-entry'));
         }
         
         // Use random_int() instead of rand() (C03)

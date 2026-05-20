@@ -1,23 +1,22 @@
 # QuickEntry
 
-Create temporary login URLs with email verification and role assignment for WordPress.
-
-![Plugin Screenshot](https://github.com/guilamu/quick-entry/blob/main/Screenshot.png)
-
+Create temporary login URLs with optional email verification or direct single-use login for WordPress.
 
 ## Temporary Login Management
 
 - Generate unique, secure login URLs that expire after a set time
+- Choose between emailed verification codes or direct single-use login links
 - Assign any WordPress role (Administrator, Editor, Author, Contributor, Subscriber)
 - Configure URLs for single use or multiple uses until expiration
 - Revoke temporary logins at any time from the admin dashboard
 
-## Email Verification
+## Access Modes
 
-- Send 6-digit verification codes via WordPress email system
-- Resend codes with a single click
-- Codes expire after 10 minutes for security
-- Spam folder notice included in verification page
+- Email verification mode sends a 6-digit verification code via WordPress email
+- Verification codes can be resent with a single click
+- Verification codes expire after 10 minutes for security
+- Direct-login mode skips email entirely and logs in from the link itself
+- Direct-login links are always single-use for safety
 
 ## Admin Dashboard
 
@@ -33,14 +32,14 @@ Create temporary login URLs with email verification and role assignment for Word
 - **One-Time Use:** Optional single-use mode for maximum security
 - **Multilingual:** Works with content in any language
 - **Translation-Ready:** All strings are internationalized
-- **Secure:** Cryptographically secure tokens, email verification, rate limiting
+- **Secure:** Cryptographically secure tokens, optional email verification, single-use direct login, rate limiting
 - **GitHub Updates:** Automatic updates from GitHub releases
 
 ## Requirements
 
 - WordPress 5.8 or higher
 - PHP 7.4 or higher
-- WordPress email system must be functional (for sending verification codes)
+- WordPress email system must be functional when you use email verification links
 
 ## Installation
 
@@ -53,7 +52,7 @@ Create temporary login URLs with email verification and role assignment for Word
 
 ### Is this secure?
 
-Yes. Each temporary login uses cryptographically secure random tokens (256-bit entropy via `random_bytes()`), tokens and verification codes are stored hashed (SHA-256 / `wp_hash_password()`), 6-digit codes are sent via email, and configurable expiration dates apply.
+Yes. Each temporary login uses cryptographically secure random tokens (256-bit entropy via `random_bytes()`), tokens and verification codes are stored hashed (`wp_hash_password()`), configurable expiration dates apply, and direct-login links are forced to single use. Because a direct-login URL is itself a credential, it should only be shared with the intended person.
 
 ### What happens when a temporary login expires?
 
@@ -65,11 +64,11 @@ Yes. Go to **QuickEntry → Temporary Logins** and click "Revoke" on any active 
 
 ### Does this create actual WordPress user accounts?
 
-No. Temporary logins create a session with the assigned role permissions but do not create permanent user accounts in the database.
+Yes. QuickEntry creates or reuses WordPress user accounts internally so it can apply the requested role and establish a normal authenticated session.
 
 ### Can I customize the verification email?
 
-Yes, use the `qentry_email_subject` and `qentry_email_body` filters:
+Yes, for email-verification links, use the `qentry_email_subject` and `qentry_email_body` filters:
 
 ```php
 add_filter( 'qentry_email_subject', function( $subject ) {
@@ -109,6 +108,12 @@ add_filter( 'qentry_email_body', function( $body, $code ) {
 ```
 
 ## Changelog
+
+### 1.3.0
+- **Feature:** Added an optional direct-login mode that skips the email confirmation code
+- **Security:** Direct-login links are forced to single use and do not expose resend-code actions
+- **UI:** Added a skip-confirmation option under the email field with direct-login guidance
+- **Docs:** Updated feature and FAQ documentation for direct-login behavior and internal user creation
 
 ### 1.2.3
 - **UI:** Redesigned admin create form, logins list, and activity log with card-style headers
