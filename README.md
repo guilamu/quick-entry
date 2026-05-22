@@ -109,6 +109,10 @@ add_filter( 'qentry_email_body', function( $body, $code ) {
 
 ## Changelog
 
+### 1.3.1
+- **Fix:** Restored `qentry-copy-url` button dashicon alignment after the WordPress 7 admin CSS update
+- **UI:** Increased icon-to-label spacing for the modal copy button so the clipboard icon no longer feels cramped against the text
+
 ### 1.3.0
 - **Feature:** Added an optional direct-login mode that skips the email confirmation code
 - **Security:** Direct-login links are forced to single use and do not expose resend-code actions

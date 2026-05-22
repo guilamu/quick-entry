@@ -656,12 +656,18 @@ select.qentry-form-input {
 }
 
 .qentry-url-display .button {
+    display: inline-flex;
+    align-items: center;
     white-space: nowrap;
 }
 
 .qentry-url-display .button .dashicons {
-    vertical-align: middle;
-    margin-right: 6px;
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 1;
+    flex: 0 0 auto;
+    margin-right: 8px;
 }
 
 /* URL Info */
