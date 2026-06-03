@@ -109,6 +109,11 @@ add_filter( 'qentry_email_body', function( $body, $code ) {
 
 ## Changelog
 
+### 1.3.2
+- **Fix:** Resolved database errors when `wp_qentry_tokens` and `wp_qentry_activity_logs` tables don't exist (e.g. plugin installed via FTP/Git without triggering the activation hook)
+- **Fix:** `remove_duplicate_logs()` no longer runs a `DELETE` query on every page load when the activity logs table is missing
+- **Improvement:** `maybe_upgrade()` now auto-creates both tables if they are missing, so the plugin self-heals without requiring a deactivate/reactivate cycle
+
 ### 1.3.1
 - **Fix:** Restored `qentry-copy-url` button dashicon alignment after the WordPress 7 admin CSS update
 - **UI:** Increased icon-to-label spacing for the modal copy button so the clipboard icon no longer feels cramped against the text

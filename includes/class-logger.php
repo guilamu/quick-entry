@@ -456,6 +456,11 @@ class QENTRY_Logger {
 
         $table = $wpdb->prefix . 'qentry_activity_logs';
 
+        // Skip if the table hasn't been created yet.
+        if (!QENTRY_Database::table_exists($table)) {
+            return;
+        }
+
         // Delete duplicates: keep the lowest ID for each group of identical entries
         $wpdb->query(
             "DELETE t1 FROM {$table} t1

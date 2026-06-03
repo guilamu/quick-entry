@@ -10,6 +10,18 @@ if (!defined('ABSPATH')) {
 class QENTRY_Database {
     
     /**
+     * Check if a database table exists.
+     *
+     * @param string $table Full table name (with prefix).
+     * @return bool
+     */
+    public static function table_exists($table) {
+        global $wpdb;
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+        return $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table)) === $table;
+    }
+    
+    /**
      * Create the custom table
      */
     public static function create_table() {
@@ -67,9 +79,21 @@ class QENTRY_Database {
      * Called on activation and on admin_init to catch upgrades without deactivate/reactivate.
      */
     public static function maybe_upgrade() {
-        $db_version = get_option('qentry_db_version', '1.0.0');
         global $wpdb;
         $table = $wpdb->prefix . 'qentry_tokens';
+
+        // Auto-create tables if they are missing (handles FTP/Git installs
+        // that bypass the activation hook).
+        if (!self::table_exists($table)) {
+            self::create_table();
+        }
+
+        $logs_table = $wpdb->prefix . 'qentry_activity_logs';
+        if (!self::table_exists($logs_table)) {
+            QENTRY_Logger::create_table();
+        }
+
+        $db_version = get_option('qentry_db_version', '1.0.0');
         
         if (version_compare($db_version, '1.1.0', '<')) {
             // Widen verification_code to hold hashed values (wp_hash_password output ~60 chars)
