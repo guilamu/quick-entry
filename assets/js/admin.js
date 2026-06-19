@@ -4,6 +4,27 @@
 
 (function($) {
     'use strict';
+
+    /**
+     * Initialize the date picker on .qentry-date-picker elements
+     * and prefill with today's date if empty.
+     */
+    function initDatepickerWithToday() {
+        $('.qentry-date-picker').datepicker({
+            dateFormat: 'mm/dd/yy',
+            minDate: 0,
+            changeMonth: true,
+            changeYear: true
+        });
+        var $dp = $('#qentry-expiration-date');
+        if ($dp.length && !$dp.val()) {
+            var today = new Date();
+            var mm = String(today.getMonth() + 1).padStart(2, '0');
+            var dd = String(today.getDate()).padStart(2, '0');
+            var yyyy = today.getFullYear();
+            $dp.val(mm + '/' + dd + '/' + yyyy);
+        }
+    }
     
     if (typeof qentry_data === 'undefined') {
         console.error('qentry_data is undefined!');
@@ -38,12 +59,7 @@
                 success: function(response) {
                     if (response.success) {
                         $('#qentry-tab-content').html(response.data.html);
-                        $('.qentry-date-picker').datepicker({
-                            dateFormat: 'mm/dd/yy',
-                            minDate: 0,
-                            changeMonth: true,
-                            changeYear: true
-                        });
+                        initDatepickerWithToday();
                         toggleMaxUses();
                     } else {
                         $('#qentry-tab-content').html('<p>Error loading content.</p>');
@@ -103,12 +119,7 @@
             });
         });
         
-        $('.qentry-date-picker').datepicker({
-            dateFormat: 'mm/dd/yy',
-            minDate: 0,
-            changeMonth: true,
-            changeYear: true
-        });
+        initDatepickerWithToday();
 
         function isSkipConfirmationEnabled() {
             return $('#qentry-skip-confirmation-code').is(':checked');
@@ -195,10 +206,17 @@
             var $form = $('#qentry-create-form');
             $form[0].reset();
             $('#qentry-skip-confirmation-code').prop('checked', false);
+            $('#qentry-delete-user-on-expire').prop('checked', false);
             $('#qentry-email').data('stored-value', '');
             $('#qentry-max-uses').data('stored-value', 0);
             $('#qentry-max-uses').val(0);
             $('#qentry-expiration-time').val('23:59');
+            // Re-set today's date after reset
+            var today = new Date();
+            var mm = String(today.getMonth() + 1).padStart(2, '0');
+            var dd = String(today.getDate()).padStart(2, '0');
+            var yyyy = today.getFullYear();
+            $('#qentry-expiration-date').val(mm + '/' + dd + '/' + yyyy);
             updateSkipConfirmationState();
         });
 
@@ -287,6 +305,7 @@
             var expiryTime = $('#qentry-expiration-time').val();
             var maxUses = parseInt($('#qentry-max-uses').val()) || 0;
             var skipConfirmation = isSkipConfirmationEnabled();
+            var deleteUserOnExpire = $('#qentry-delete-user-on-expire').is(':checked');
 
             // Validate required fields
             if (!role) {
@@ -312,7 +331,8 @@
                     qentry_skip_confirmation_code: skipConfirmation ? 1 : 0,
                     qentry_expiration_date: expiryDate,
                     qentry_expiration_time: expiryTime,
-                    qentry_max_uses: maxUses
+                    qentry_max_uses: maxUses,
+                    qentry_delete_user_on_expire: deleteUserOnExpire ? 1 : 0
                 },
                 success: function(response) {
                     if (response.success) {
@@ -322,9 +342,16 @@
 
                         $form[0].reset();
                         $('#qentry-skip-confirmation-code').prop('checked', false);
+                        $('#qentry-delete-user-on-expire').prop('checked', false);
                         $('#qentry-email').data('stored-value', '');
                         $('#qentry-max-uses').data('stored-value', 0);
                         $('#qentry-expiration-time').val('23:59');
+                        // Re-set today's date after successful submission
+                        var today = new Date();
+                        var mm = String(today.getMonth() + 1).padStart(2, '0');
+                        var dd = String(today.getDate()).padStart(2, '0');
+                        var yyyy = today.getFullYear();
+                        $('#qentry-expiration-date').val(mm + '/' + dd + '/' + yyyy);
                         $('#qentry-max-uses').val(0);
                         updateSkipConfirmationState();
                     } else {
@@ -521,6 +548,74 @@
                 error: function() {
                     showNotification('An error occurred', 'error');
                     $('#qentry-logging-toggle').prop('checked', !enabled);
+                }
+            });
+        });
+
+        // Auto-purge toggle
+        $(document).on('change', '#qentry-auto-purge-toggle', function() {
+            var enabled = $(this).is(':checked');
+
+            $.ajax({
+                url: qentry_data.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'qentry_toggle_auto_purge',
+                    nonce: $('#qentry-logging-nonce').val(),
+                    enabled: enabled.toString()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        showNotification(response.data.message, 'success');
+                    } else {
+                        showNotification('Failed to update auto-purge setting', 'error');
+                        $('#qentry-auto-purge-toggle').prop('checked', !enabled);
+                    }
+                },
+                error: function() {
+                    showNotification('An error occurred', 'error');
+                    $('#qentry-auto-purge-toggle').prop('checked', !enabled);
+                }
+            });
+        });
+
+        // Clear logs button
+        $(document).on('click', '#qentry-clear-logs-btn', function() {
+            if (!confirm(qentry_data.i18n.confirm_clear_logs)) {
+                return;
+            }
+
+            var $btn = $(this);
+            $btn.prop('disabled', true);
+
+            $.ajax({
+                url: qentry_data.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'qentry_clear_logs',
+                    nonce: $('#qentry-logging-nonce').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        showNotification(response.data.message, 'success');
+                        // Clear the table body
+                        $('.qentry-activity-table tbody').html(
+                            '<tr><td colspan="5">' + 'No activity logged yet.' + '</td></tr>'
+                        );
+                        // Remove pagination if present
+                        $('.qentry-activity-table-wrap .tablenav.bottom').remove();
+                    } else {
+                        showNotification(
+                            (response.data && response.data.message) || qentry_data.i18n.logs_clear_error,
+                            'error'
+                        );
+                    }
+                },
+                error: function() {
+                    showNotification(qentry_data.i18n.logs_clear_error, 'error');
+                },
+                complete: function() {
+                    $btn.prop('disabled', false);
                 }
             });
         });

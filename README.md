@@ -109,6 +109,10 @@ add_filter( 'qentry_email_body', function( $body, $code ) {
 
 ## Changelog
 
+### 1.3.3
+- **i18n:** Added 11 missing French translations for auto-purge, auto-delete, and clear logs features
+- **Feature:**Clear logs button, auto-purge logs after 30 days, delete users after they expire.
+
 ### 1.3.2
 - **Fix:** Resolved database errors when `wp_qentry_tokens` and `wp_qentry_activity_logs` tables don't exist (e.g. plugin installed via FTP/Git without triggering the activation hook)
 - **Fix:** `remove_duplicate_logs()` no longer runs a `DELETE` query on every page load when the activity logs table is missing

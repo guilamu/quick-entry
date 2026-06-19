@@ -44,6 +44,8 @@ class QENTRY_Database {
             usage_type varchar(20) DEFAULT 'one_time',
             max_uses int(11) DEFAULT 1,
             use_count int(11) DEFAULT 0,
+            delete_user_on_expire tinyint(1) DEFAULT 0,
+            wp_user_id bigint(20) DEFAULT 0,
             PRIMARY KEY  (id),
             UNIQUE KEY token (token),
             KEY email (email),
@@ -115,6 +117,27 @@ class QENTRY_Database {
             }
 
             update_option('qentry_db_version', '1.2.0');
+            $db_version = '1.2.0';
+        }
+
+        if (version_compare($db_version, '1.3.0', '<')) {
+            $has_delete_flag = $wpdb->get_var($wpdb->prepare(
+                "SHOW COLUMNS FROM {$table} LIKE %s",
+                'delete_user_on_expire'
+            ));
+            if (null === $has_delete_flag) {
+                $wpdb->query("ALTER TABLE {$table} ADD COLUMN delete_user_on_expire tinyint(1) DEFAULT 0 AFTER use_count");
+            }
+
+            $has_wp_user_id = $wpdb->get_var($wpdb->prepare(
+                "SHOW COLUMNS FROM {$table} LIKE %s",
+                'wp_user_id'
+            ));
+            if (null === $has_wp_user_id) {
+                $wpdb->query("ALTER TABLE {$table} ADD COLUMN wp_user_id bigint(20) DEFAULT 0 AFTER delete_user_on_expire");
+            }
+
+            update_option('qentry_db_version', '1.3.0');
         }
     }
     
@@ -147,6 +170,24 @@ class QENTRY_Database {
         $cleanup_days = get_option('qentry_cleanup_days', 30);
         $cutoff = date('Y-m-d H:i:s', time() - ($cleanup_days * DAY_IN_SECONDS));
         
+        // Delete WP users flagged for removal on expiry
+        $entries_to_clean = $wpdb->get_results($wpdb->prepare(
+            "SELECT id, wp_user_id, delete_user_on_expire FROM {$table} WHERE expires_at < %s",
+            $cutoff
+        ));
+
+        if ($entries_to_clean) {
+            require_once ABSPATH . 'wp-admin/includes/user.php';
+            foreach ($entries_to_clean as $entry) {
+                if (!empty($entry->delete_user_on_expire) && !empty($entry->wp_user_id)) {
+                    $user = get_user_by('id', $entry->wp_user_id);
+                    if ($user && !user_can($user, 'manage_options')) {
+                        wp_delete_user($entry->wp_user_id);
+                    }
+                }
+            }
+        }
+
         $wpdb->query($wpdb->prepare(
             "DELETE FROM {$table} WHERE expires_at < %s",
             $cutoff

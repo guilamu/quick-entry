@@ -2,10 +2,10 @@
 # This file is distributed under the GNU Affero General Public License v3.0 (AGPL-3.0).
 msgid ""
 msgstr ""
-"Project-Id-Version: QuickEntry 1.3.1\n"
+"Project-Id-Version: QuickEntry 1.3.3\n"
 "Report-Msgid-Bugs-To: https://github.com/guilamu/quick-entry/issues\n"
-"POT-Creation-Date: 2026-04-05 00:00+0000\n"
-"PO-Revision-Date: 2026-05-20 13:13+0200\n"
+"POT-Creation-Date: 2026-06-19 00:00+0000\n"
+"PO-Revision-Date: 2026-06-19 10:18+0200\n"
 "Last-Translator: guilamu\n"
 "Language-Team: French (France)\n"
 "Language: fr_FR\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 3.9\n"
+"X-Generator: Poedit 3.8\n"
 "X-Poedit-KeywordsList: "
 "__;_e;_x:1,2c;_ex:1,2c;_n:1,2;_nx:1,2,4c;_n_noop:1,2;_nx_noop:1,2,3c;esc_attr__;esc_html__;esc_attr_e;esc_html_e;esc_attr_x:1,2c;esc_html_x:1,2c\n"
 "X-Poedit-Basepath: ..\n"
@@ -444,6 +444,50 @@ msgstr "Journalisation désactivée."
 #: includes/class-admin.php
 msgid "Tab functionality has been removed."
 msgstr "La fonctionnalité d'onglets a été supprimée."
+
+#: includes/class-admin.php
+msgid "Auto-purge enabled. Logs older than 30 days will be deleted daily."
+msgstr "Auto-purge activée. Les journaux de plus de 30 jours seront supprimés quotidiennement."
+
+#: includes/class-admin.php
+msgid "Auto-purge disabled."
+msgstr "Auto-purge désactivée."
+
+#: includes/class-admin.php
+msgid "Are you sure you want to delete all activity logs? This action cannot be undone."
+msgstr "Êtes-vous sûr de vouloir supprimer tous les journaux d'activité ? Cette action est irréversible."
+
+#: includes/class-admin.php
+msgid "All activity logs have been cleared."
+msgstr "Tous les journaux d'activité ont été effacés."
+
+#: includes/class-admin.php
+msgid "Failed to clear activity logs."
+msgstr "Échec de l'effacement des journaux d'activité."
+
+#: includes/class-admin.php
+msgid "Delete user when access expires"
+msgstr "Supprimer l'utilisateur à l'expiration de l'accès"
+
+#: includes/class-admin.php
+msgid "Automatically delete the WordPress user account created for this temporary login once it expires. Prevents accumulation of unused accounts."
+msgstr "Supprime automatiquement le compte utilisateur WordPress créé pour cette connexion temporaire dès son expiration. Empêche l'accumulation de comptes inutilisés."
+
+#: includes/class-admin.php
+msgid "User will be deleted when this login expires"
+msgstr "L'utilisateur sera supprimé à l'expiration de cette connexion"
+
+#: includes/class-admin.php
+msgid "Auto-purge after 30 days"
+msgstr "Auto-purge après 30 jours"
+
+#: includes/class-admin.php
+msgid "Delete all activity logs"
+msgstr "Supprimer tous les journaux d'activité"
+
+#: includes/class-admin.php
+msgid "Clear Logs"
+msgstr "Effacer les journaux"
 
 #: includes/class-authenticator.php
 msgid "Verification failed. Please check your code and try again."

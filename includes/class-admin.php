@@ -17,6 +17,8 @@ class QENTRY_Admin {
         add_action('wp_ajax_qentry_resend_code', array(__CLASS__, 'ajax_resend_code'));
         add_action('wp_ajax_qentry_get_tab_content', array(__CLASS__, 'ajax_get_tab_content'));
         add_action('wp_ajax_qentry_toggle_logging', array(__CLASS__, 'ajax_toggle_logging'));
+        add_action('wp_ajax_qentry_toggle_auto_purge', array(__CLASS__, 'ajax_toggle_auto_purge'));
+        add_action('wp_ajax_qentry_clear_logs', array(__CLASS__, 'ajax_clear_logs'));
     }
     
     /**
@@ -84,6 +86,11 @@ class QENTRY_Admin {
                 'modal_step_three_standard' => __('They enter the code to gain access.', 'quick-entry'),
                 'modal_step_two_skip' => __('When they click the link, they will log in immediately.', 'quick-entry'),
                 'modal_step_three_skip' => __('Direct-login links are single-use, so share them only with the intended person.', 'quick-entry'),
+                'auto_purge_enabled' => __('Auto-purge enabled. Logs older than 30 days will be deleted daily.', 'quick-entry'),
+                'auto_purge_disabled' => __('Auto-purge disabled.', 'quick-entry'),
+                'confirm_clear_logs' => __('Are you sure you want to delete all activity logs? This action cannot be undone.', 'quick-entry'),
+                'logs_cleared' => __('All activity logs have been cleared.', 'quick-entry'),
+                'logs_clear_error' => __('Failed to clear activity logs.', 'quick-entry'),
             ),
         ));
     }
@@ -227,6 +234,19 @@ class QENTRY_Admin {
                                     <p class="qentry-field-hint" id="qentry-max-uses-hint"><?php _e('Enter 0 for unlimited uses.', 'quick-entry'); ?></p>
                                 </div>
 
+                                <!-- Delete user on expiry -->
+                                <div class="qentry-field qentry-field-full">
+                                    <label class="qentry-option-card" for="qentry-delete-user-on-expire">
+                                        <span class="qentry-option-control">
+                                            <input type="checkbox" name="qentry_delete_user_on_expire" id="qentry-delete-user-on-expire" value="1">
+                                        </span>
+                                        <span class="qentry-option-content">
+                                            <span class="qentry-option-title"><?php _e('Delete user when access expires', 'quick-entry'); ?></span>
+                                            <span class="qentry-option-description"><?php _e('Automatically delete the WordPress user account created for this temporary login once it expires. Prevents accumulation of unused accounts.', 'quick-entry'); ?></span>
+                                        </span>
+                                    </label>
+                                </div>
+
                             </div><!-- /qentry-form-grid -->
                         </form>
                     </div>
@@ -333,6 +353,11 @@ class QENTRY_Admin {
                                             <?php else : ?>
                                                 <span class="qentry-status-badge qentry-active"><?php _e('Active', 'quick-entry'); ?></span>
                                             <?php endif; ?>
+                                            <?php if (!empty($login->delete_user_on_expire)) : ?>
+                                                <span class="qentry-auto-delete-badge" title="<?php esc_attr_e('User will be deleted when this login expires', 'quick-entry'); ?>">
+                                                    <span class="dashicons dashicons-trash"></span>
+                                                </span>
+                                            <?php endif; ?>
                                         </td>
                                         <td class="column-actions" style="white-space:nowrap;">
                                             <?php if (!$is_used && !$is_expired) : ?>
@@ -412,6 +437,18 @@ class QENTRY_Admin {
                                 <input type="checkbox" id="qentry-logging-toggle" <?php checked(get_option('qentry_logging_enabled', true)); ?>>
                                 <span class="qentry-toggle-slider"></span>
                             </label>
+                            <?php if ($logging_enabled) : ?>
+                            <span class="qentry-toggle-separator"></span>
+                            <label class="qentry-logging-toggle" id="qentry-auto-purge-wrap">
+                                <span class="qentry-toggle-label"><?php _e('Auto-purge after 30 days', 'quick-entry'); ?></span>
+                                <input type="checkbox" id="qentry-auto-purge-toggle" <?php checked(get_option('qentry_auto_purge_logs', false)); ?>>
+                                <span class="qentry-toggle-slider"></span>
+                            </label>
+                            <button type="button" class="button qentry-btn-clear-logs" id="qentry-clear-logs-btn" title="<?php esc_attr_e('Delete all activity logs', 'quick-entry'); ?>">
+                                <span class="dashicons dashicons-trash"></span>
+                                <?php _e('Clear Logs', 'quick-entry'); ?>
+                            </button>
+                            <?php endif; ?>
                             <input type="hidden" name="qentry_toggle_logging" id="qentry-logging-nonce" value="<?php echo wp_create_nonce('qentry_toggle_logging'); ?>">
                         </div>
                     </form>
@@ -747,6 +784,8 @@ class QENTRY_Admin {
         $expiration_time = sanitize_text_field($_POST['qentry_expiration_time'] ?? '');
         $max_uses = intval($_POST['qentry_max_uses'] ?? 0);
 
+        $delete_user_on_expire = !empty($_POST['qentry_delete_user_on_expire']);
+
         if (!$skip_confirmation_code && !is_email($email)) {
             wp_send_json_error(__('Invalid email address.', 'quick-entry'));
         }
@@ -788,6 +827,7 @@ class QENTRY_Admin {
             'expires_at'        => $expires_at,
             'max_uses'          => $max_uses,
             'usage_type'        => $usage_type,
+            'delete_user_on_expire' => $delete_user_on_expire ? 1 : 0,
         );
         
         $insert_id = QENTRY_Database::insert_login($data);
@@ -906,5 +946,58 @@ class QENTRY_Admin {
 
         // Tab functionality removed - return error
         wp_send_json_error(__('Tab functionality has been removed.', 'quick-entry'));
+    }
+
+    /**
+     * AJAX: Toggle auto-purge of activity logs after 30 days
+     */
+    public static function ajax_toggle_auto_purge() {
+        check_ajax_referer('qentry_toggle_logging', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(__('Permission denied.', 'quick-entry'));
+        }
+
+        $enabled = isset($_POST['enabled']) && $_POST['enabled'] === 'true';
+        update_option('qentry_auto_purge_logs', $enabled);
+
+        // Schedule or unschedule the daily cleanup cron
+        if ($enabled) {
+            if (!wp_next_scheduled('qentry_cleanup_activity_logs')) {
+                wp_schedule_event(time(), 'daily', 'qentry_cleanup_activity_logs');
+            }
+        } else {
+            wp_clear_scheduled_hook('qentry_cleanup_activity_logs');
+        }
+
+        wp_send_json_success(array(
+            'enabled' => $enabled,
+            'message' => $enabled
+                ? __('Auto-purge enabled. Logs older than 30 days will be deleted daily.', 'quick-entry')
+                : __('Auto-purge disabled.', 'quick-entry'),
+        ));
+    }
+
+    /**
+     * AJAX: Clear all activity logs
+     */
+    public static function ajax_clear_logs() {
+        check_ajax_referer('qentry_toggle_logging', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(__('Permission denied.', 'quick-entry'));
+        }
+
+        $result = QENTRY_Logger::clear_all_logs();
+
+        if ($result !== false) {
+            wp_send_json_success(array(
+                'message' => __('All activity logs have been cleared.', 'quick-entry'),
+            ));
+        } else {
+            wp_send_json_error(array(
+                'message' => __('Failed to clear activity logs.', 'quick-entry'),
+            ));
+        }
     }
 }

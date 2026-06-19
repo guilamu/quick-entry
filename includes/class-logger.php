@@ -448,6 +448,19 @@ class QENTRY_Logger {
     }
 
     /**
+     * Delete all activity logs.
+     *
+     * @return int|false Number of rows deleted, or false on error.
+     */
+    public static function clear_all_logs() {
+        global $wpdb;
+
+        $table = $wpdb->prefix . 'qentry_activity_logs';
+
+        return $wpdb->query("TRUNCATE TABLE {$table}");
+    }
+
+    /**
      * Remove exact duplicate log entries (same action, user, object, ip within same second).
      * Keeps only the first occurrence of each duplicate group.
      */

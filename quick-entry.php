@@ -3,7 +3,7 @@
  * Plugin Name: QuickEntry
  * Plugin URI: https://github.com/guilamu/quick-entry
  * Description: Create temporary login URLs with optional email verification or direct login and role assignment.
- * Version: 1.3.2
+ * Version: 1.3.3
  * Author: guilamu
  * Author URI: https://github.com/guilamu
  * License: GPL v2 or later
@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
 
 define('QENTRY_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('QENTRY_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('QENTRY_PLUGIN_VERSION', '1.3.2');
+define('QENTRY_PLUGIN_VERSION', '1.3.3');
 
 // Include required files
 require_once QENTRY_PLUGIN_DIR . 'includes/class-database.php';
@@ -62,7 +62,11 @@ class Quick_Entry {
 
         // Register WP-Cron hooks
         add_action('qentry_cleanup_expired_tokens', array('QENTRY_Database', 'cleanup_expired'));
-        add_action('qentry_cleanup_activity_logs', array('QENTRY_Logger', 'cleanup_old_logs'));
+        add_action('qentry_cleanup_activity_logs', function() {
+            if (get_option('qentry_auto_purge_logs', false)) {
+                QENTRY_Logger::cleanup_old_logs();
+            }
+        });
 
         // Run DB upgrades if needed (auto-migrate without deactivate/reactivate)
         add_action('admin_init', array('QENTRY_Database', 'maybe_upgrade'));

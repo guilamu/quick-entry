@@ -135,6 +135,11 @@
     gap: 1.25rem 1.5rem;
 }
 
+/* Full-width field spanning both grid columns */
+.qentry-field-full {
+    grid-column: 1 / -1;
+}
+
 /* === Field === */
 .qentry-field {
     display: flex;
@@ -782,6 +787,7 @@ select.qentry-form-input {
     gap: 10px;
     align-items: center;
     flex-wrap: wrap;
+    justify-content: space-between;
 }
 
 .qentry-logging-enabled .qentry-log-filters {
@@ -799,15 +805,61 @@ select.qentry-form-input {
     display: flex;
     align-items: center;
     margin-left: auto;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+/* Separator between toggles */
+.qentry-toggle-separator {
+    display: inline-block;
+    width: 1px;
+    height: 22px;
+    background: #c3c4c7;
+    flex-shrink: 0;
+}
+
+/* Clear Logs button */
+.wp-core-ui .qentry-admin-wrap .button.qentry-btn-clear-logs {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #b32d2e;
+    border-color: #b32d2e;
+    white-space: nowrap;
+    font-size: 13px;
+    padding: 0 12px;
+    height: 30px;
+    line-height: 1;
+    transition: all 0.15s ease;
+}
+
+.wp-core-ui .qentry-admin-wrap .button.qentry-btn-clear-logs .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+.wp-core-ui .qentry-admin-wrap .button.qentry-btn-clear-logs:hover {
+    background: #b32d2e;
+    color: #fff;
+    border-color: #b32d2e;
+}
+
+.wp-core-ui .qentry-admin-wrap .button.qentry-btn-clear-logs:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 /* Toggle Switch */
 .qentry-logging-toggle {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     cursor: pointer;
     user-select: none;
+    white-space: nowrap;
 }
 
 .qentry-toggle-label {
@@ -823,10 +875,10 @@ select.qentry-form-input {
 .qentry-toggle-slider {
     position: relative;
     display: inline-block;
-    width: 40px;
-    height: 22px;
+    width: 36px;
+    height: 20px;
     background: #c3c4c7;
-    border-radius: 22px;
+    border-radius: 20px;
     transition: background 0.2s ease;
     flex-shrink: 0;
 }
@@ -836,8 +888,8 @@ select.qentry-form-input {
     position: absolute;
     top: 2px;
     left: 2px;
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     background: #fff;
     border-radius: 50%;
     transition: transform 0.2s ease;
@@ -849,7 +901,7 @@ select.qentry-form-input {
 }
 
 .qentry-logging-toggle input[type="checkbox"]:checked + .qentry-toggle-slider::before {
-    transform: translateX(18px);
+    transform: translateX(16px);
 }
 
 .qentry-activity-table {
@@ -948,33 +1000,61 @@ select.qentry-form-input {
     border: 1px solid #ff7875;
 }
 
+/* Auto-delete badge (trash icon next to status) */
+.qentry-auto-delete-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 4px;
+    vertical-align: middle;
+    color: #b32d2e;
+    cursor: help;
+}
+
+.qentry-auto-delete-badge .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    line-height: 14px;
+}
+
 /* Action Buttons */
-.qentry-copy-btn,
-.qentry-resend-btn,
-.qentry-delete-btn {
+.wp-core-ui .qentry-admin-wrap .button.qentry-copy-btn,
+.wp-core-ui .qentry-admin-wrap .button.qentry-resend-btn,
+.wp-core-ui .qentry-admin-wrap .button.qentry-delete-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    width: 30px;
+    height: 30px;
     transition: all 0.2s ease;
 }
 
-.qentry-copy-btn .dashicons,
-.qentry-resend-btn .dashicons,
-.qentry-delete-btn .dashicons {
+.wp-core-ui .qentry-admin-wrap .button.qentry-copy-btn .dashicons,
+.wp-core-ui .qentry-admin-wrap .button.qentry-resend-btn .dashicons,
+.wp-core-ui .qentry-admin-wrap .button.qentry-delete-btn .dashicons {
     margin: 0;
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 1;
     vertical-align: middle;
 }
 
-.qentry-delete-btn {
+.wp-core-ui .qentry-admin-wrap .button.qentry-delete-btn {
     color: #d63638;
     border-color: #d63638;
 }
 
-.qentry-delete-btn:hover {
+.wp-core-ui .qentry-admin-wrap .button.qentry-delete-btn:hover {
     background: #d63638;
     color: #fff;
     border-color: #d63638;
 }
 
-.qentry-copy-btn:hover,
-.qentry-resend-btn:hover {
+.wp-core-ui .qentry-admin-wrap .button.qentry-copy-btn:hover,
+.wp-core-ui .qentry-admin-wrap .button.qentry-resend-btn:hover {
     background: #0073aa;
     color: #fff;
     border-color: #0073aa;

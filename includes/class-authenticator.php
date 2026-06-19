@@ -164,6 +164,9 @@ class QENTRY_Authenticator {
         do_action('wp_login', $user->user_login, $user);
         
         QENTRY_Database::mark_as_used($entry->id);
+
+        // Store the WP user ID on the entry for cleanup on expiry
+        QENTRY_Database::update_login($entry->id, array('wp_user_id' => $user->ID));
         
         set_transient('qentry_temp_login_' . $user->ID, array(
             'entry_id'   => $entry->id,
